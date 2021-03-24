@@ -14,7 +14,7 @@ vocabulary f8
 f8 definitions
 
 \ fixed point format
-1 15 lshift constant #fbits
+1 16 lshift constant #fbits
 
 \ fixed point 1.15 format
 : i>fi   ( d -- f8 )     #fbits * ;
@@ -46,13 +46,13 @@ constant vector3
 
 create v0 vector3 allot
 create v1 vector3 allot
+create v2 vector3 allot
 
-: savev0 ( v0 -- ) v0 v.z ! v0 v.y ! v0 v.x ! ;
-: savev1 ( v1 -- ) v1 v.z ! v1 v.y ! v1 v.x ! ;
-: savev01 ( v0 v1 -- ) savev1 savev0 ;
+: v! ( x y z addr -- ) dup >r v.z ! r@ v.y ! r> ! ;
+: v@ ( v -- x y z )    dup @ swap dup v.y@ swap v.z@ ;
 
 : vadd ( v0 v1 -- v2 )
-  savev01
+  v1 v! v0 v!
 
   v0 v.x@ v1 v.x@ +
   v0 v.y@ v1 v.y@ +
@@ -60,7 +60,7 @@ create v1 vector3 allot
 ;
 
 : vsub ( v0 v1 -- v2 )
-  savev01
+  v1 v! v0 v!
 
   v0 v.x@ v1 v.x@ -
   v0 v.y@ v1 v.y@ -
@@ -68,7 +68,7 @@ create v1 vector3 allot
 ;
 
 : vmul ( v0 v1 -- v2 )
-  savev01
+  v1 v! v0 v!
 
   v0 v.x@ v1 v.x@ fimul
   v0 v.y@ v1 v.y@ fimul
@@ -76,25 +76,23 @@ create v1 vector3 allot
 ;
 
 : vdiv ( v0 v1 -- v2 )
-  savev01
+  v1 v! v0 v!
 
   v0 v.x@ v1 v.x@ fidiv
   v0 v.y@ v1 v.y@ fidiv
   v0 v.z@ v1 v.z@ fidiv
 ;
 
-: vlen ( v0 -- n )
-  savev0
+: vlensq ( v0 -- n )
+  v0 v!
 
   v0 v.x@ dup fimul
   v0 v.y@ dup fimul
   v0 v.z@ dup fimul + +
-
-  s>f fsqrt f>s
 ;
 
 : vdot ( v0 v1 -- n )
-  savev01
+  v1 v! v0 v!
 
   v0 v.x@ v1 v.x@ fimul
   v0 v.y@ v1 v.y@ fimul
@@ -104,7 +102,7 @@ create v1 vector3 allot
 ;
 
 : vcross ( v0 v1 -- v2 )
-  savev01
+  v1 v! v0 v!
 
   v0 v.y@ v1 v.z@ fimul
   v0 v.z@ v1 v.y@ fimul -
@@ -116,9 +114,38 @@ create v1 vector3 allot
   v0 v.y@ v1 v.x@ fimul -
 ;
 
-: v*     ( addr -- x y z ) dup @ swap dup 1 cells + @ swap 2 cells + @ ;
+: vnormal ( v0 v1 v2 -- v3 )
+  v2 v! v1 v! v0 v!
+
+  v1 v@ v0 v@ vsub
+  v2 v@ v0 v@ vsub
+  vcross
+;
+  
+
 : i3>fi3 ( a b c - a b c ) i>fi rot i>fi rot i>fi rot ;
 : fi3>i3 ( a b c - a b c ) fi>i rot fi>i rot fi>i rot ;
+
+variable x0
+variable y0
+variable x1
+variable y1
+variable x2
+variable y2
+: visible? ( x0 y0 x1 y1 x2 y2 -- t )
+  y2 ! x2 ! y1 ! x1 ! y0 ! x0 !
+
+  x1 @ x0 @ -
+  y1 @ y0 @ + *
+
+  x2 @ x1 @ -
+  y2 @ y1 @ + *
+
+  x0 @ x2 @ -
+  y0 @ y2 @ + *
+
+  + + 0 <=
+;
 
 \ end vec
 
@@ -210,7 +237,6 @@ variable s
     then
   then
 ;
-
   
 create xs 1 ,
 : rnd ( n -- u )
@@ -221,6 +247,7 @@ create xs 1 ,
   dup xs !
   abs swap mod
 ;
+
 
 : >p  ( z p -- p1 )  #dist fimul swap fidiv ;
 
@@ -288,24 +315,50 @@ variable a
   costable a @ cells + @ z @ fimul +
 ;
 
-
-: face-vertex>2d ( i -- x y )
+: face>vertex ( f -- x y z )
   cells faces @ + @ 1-         \ face index
-  vector3 * vertices @ + v*    \ vertex position
-  t1 v* vmul                 \ scale vector
+  vector3 * vertices @ + v@    \ vertex position
+;
+
+create v0 vector3 allot
+: v>xy ( v -- x y )
+  v0 v!
+  v0 v@ t1 v@ vmul
   angle @ xrot
   angle @ yrot
   angle @ zrot
-  t0 v* vadd                 \ translate vector
+  t0 v@ vadd                 \ translate vector
   3d>2d                      \ project to screen x0 y0
 ;
 
-: draw-edge ( i j -- )
-  face-vertex>2d rot
-  face-vertex>2d line
+create v0 vector3 allot
+create v1 vector3 allot
+create v2 vector3 allot
+variable x0
+variable y0
+variable x1
+variable y1
+variable x2
+variable y2
+: draw-triangle ( v0 v1 v2 -- )
+  v2 v! v1 v! v0 v!
+
+  v0 v@ v>xy y0 ! x0 !
+  v1 v@ v>xy y1 ! x1 !
+  v2 v@ v>xy y2 ! x2 !
+
+  \ order messed up?
+  x0 @ y0 @ x1 @ y1 @ x2 @ y2 @ visible? if
+    x0 @ y0 @ x1 @ y1 @ line
+    x1 @ y1 @ x2 @ y2 @ line
+    x2 @ y2 @ x0 @ y0 @ line
+  then
 ;
 
 
+create v0 vector3 allot
+create v1 vector3 allot
+create v2 vector3 allot
 : 3d
   255 255 255 set-color
 
@@ -313,13 +366,21 @@ variable a
     clear-screen
 
     fcount @ 0 do
-      i     i 1 + draw-edge
-      i 1 + i 2 + draw-edge
-      i 2 + i 0 + draw-edge
+      i     face>vertex v0 v!
+      i 1 + face>vertex v1 v!
+      i 2 + face>vertex v2 v!
+
+      \ 255 0 255 set-color
+      \ v0 v@ v1 v@ v2 v@ normal v>xy
+      \ v1 v@ v>xy line
+      \ 255 255 255 set-color
+      
+      v0 v@ v1 v@ v2 v@ draw-triangle
+
     3 +loop
 
     1000 60 / sdl-delay
-    angle @ 1+ angle !
+    angle @ 1 + angle !
 
     flip-screen
 
@@ -351,8 +412,7 @@ variable oy
   wait-key
 ;
 
-s" cube.obj" load-obj fcount ! vcount ! faces ! vertices !
+s" torus.obj" load-obj fcount ! vcount ! faces ! vertices !
 3d
-
 
 bye

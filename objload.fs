@@ -12,7 +12,7 @@ variable fcount          \ number of faces
 : open ( addr u )      r/o open-file throw ;
 : open-file ( addr u ) open fd ! ;
 : rewind               0 0 fd @ reposition-file throw ;
-: close-file           fd @ close-file ;
+: close-file           fd @ close-file throw ;
 
 : count-elements ( -- v f )
   0 0 \ vertex face counters
@@ -27,7 +27,7 @@ variable fcount          \ number of faces
 : alloc-buffer ( n -- addr ) here swap cell * allot ;
 
 \ fixed point format
-1 15 lshift constant #fbits
+1 16 lshift constant #fbits
 : f>fi  ( F: f -- ) ( -- n )
   fdup f>d drop #fbits * 1.0e fmod #fbits 0 d>f f* f>d drop + ;
 
