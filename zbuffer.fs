@@ -1,6 +1,7 @@
 require sdl.fs
 require fp.fs
 
+variable zbuffer-on? false zbuffer-on? !
 create zbuffer #width #height * allot
 variable currentz
 

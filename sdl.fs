@@ -59,6 +59,12 @@ variable sdl-event sdl-event-type-size allot
   get-pixel-addr set-pixel
 ;
 
+: pixel-off? ( x y -- t )
+  dup #height >= swap 0 < or swap
+  dup #width >= swap 0 < or
+  or
+;
+
 : clear-screen ( -- )
   #stride #height * pixels @ + pixels @ do
     0 i c!

@@ -9,6 +9,7 @@ require zbuffer.fs
 require line.fs
 require trig.fs
 require vec3.fs
+require scanfill.fs
 
 variable vertices
 variable faces
@@ -25,13 +26,13 @@ variable y2
   y2 ! x2 ! y1 ! x1 ! y0 ! x0 !
 
   x1 @ x0 @ -
-  y1 @ y0 @ + *
+  y1 @ y0 @ + fimul
 
   x2 @ x1 @ -
-  y2 @ y1 @ + *
+  y2 @ y1 @ + fimul
 
   x0 @ x2 @ -
-  y0 @ y2 @ + *
+  y0 @ y2 @ + fimul
 
   + + 0 <=
 ;
@@ -54,7 +55,7 @@ variable z
   z @
 ;
 
-create t0 0.0e f>fi , 0.0e f>fi , -2.0e f>fi , \ translate vector
+create t0 0.0e f>fi , 0.0e f>fi , -2.5e f>fi , \ translate vector
 create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi , \ scale vector
 variable angle 0 angle !
 
@@ -147,12 +148,12 @@ variable z2
 
   get-average-z currentz !
 
-  x0 @ fi>i y0 @ fi>i
-  x1 @ fi>i y1 @ fi>i
-  x2 @ fi>i y2 @ fi>i visible? if
-    x0 @ fi>i y0 @ fi>i x1 @ fi>i y1 @ fi>i line
-    x1 @ fi>i y1 @ fi>i x2 @ fi>i y2 @ fi>i line
-    x2 @ fi>i y2 @ fi>i x0 @ fi>i y0 @ fi>i line
+  x0 @ y0 @ 
+  x1 @ y1 @ 
+  x2 @ y2 @ visible? if
+    x0 @ y0 @ 
+    x1 @ y1 @ 
+    x2 @ y2 @ scanfill
   then
 ;
 
@@ -188,7 +189,7 @@ create v2 vector3 allot
   sdl-quit
 ;
 
-s" torus.obj" load-obj fcount ! vcount ! faces ! vertices !
+s" models/torus.obj" load-obj fcount ! vcount ! faces ! vertices !
 3d
 
 bye
