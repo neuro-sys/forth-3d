@@ -1,4 +1,37 @@
-\ Load a WaveFront OBJ file into memory
+\ This file loads a WaveFront OBJ file (see cube.obj for sample) into
+\ memory.
+\
+\ # WaveFront OBJ File Format
+\
+\ The file contains a text representation of a 3D scene. A minimal
+\ file looks like the following:
+\ 
+\ v -1.000000 -1.000000 1.000000
+\ v -1.000000 1.000000 1.000000
+\ v -1.000000 -1.000000 -1.000000
+\ f 2 3 1
+\
+\ The line that starts with letter "v" denotes the 3 floats denoting
+\ the vertex positions X, Y and Z.
+\
+\ The letter "f" denotes the index positions (starting from 1) into
+\ the vertex list forming a triangle.
+\
+\ # How to use
+\
+\ load-obj ( addr0 u -- vaddr faddr v f )
+\
+\ addr0 u is the string that contains the file name for the OBJ file.
+\
+\ vaddr contains the address of an array that contains x, y, z
+\ coordinates per vertex in fixed point format 1.15 (see #fbits).
+\
+\ faddr contains the address of an array that contains the integer
+\ offsets into the vertex buffer that forms a triagle.
+\
+
+require fp.fs
+
 0 warnings !
 
 variable fd              \ file handle
@@ -7,13 +40,14 @@ variable faces           \ vertex indices
 variable vcount          \ number of vertices
 variable fcount          \ number of faces
 
-\ file words
-: fd>pad               pad 80 fd @ read-line throw drop ;
-: open ( addr u )      r/o open-file throw ;
-: open-file ( addr u ) open fd ! ;
-: rewind               0 0 fd @ reposition-file throw ;
-: close-file           fd @ close-file throw ;
+\ file related words
+: fd>pad ( -- u )       pad 80 fd @ read-line throw drop ;
+: open ( addr u -- fd ) r/o open-file throw ;
+: open-file ( addr u )  open fd ! ;
+: close-file ( -- )     fd @ close-file throw ;
+: rewind ( -- )         0 0 fd @ reposition-file throw ;
 
+\ Count the number of vertices and faces in currently open file
 : count-elements ( -- v f )
   0 0 \ vertex face counters
   begin
@@ -24,109 +58,75 @@ variable fcount          \ number of faces
   repeat
 ;
 
-: alloc-buffer ( n -- addr ) here swap cell * allot ;
-
-\ fixed point format
-1 16 lshift constant #fbits
-: f>fi  ( F: f -- ) ( -- n )
-  fdup f>d drop #fbits * 1.0e fmod #fbits 0 d>f f* f>d drop + ;
+\ reserve space in Dictionary area
+: allot-buffer ( n -- addr ) here swap cell * allot ;
 
 variable voffset 0 voffset !
 variable foffset 0 foffset !
 : push-v ( n -- ) vertices @ voffset @ cells + ! voffset @ 1+ voffset ! ;
 : push-f ( n -- ) faces @ foffset @ cells + ! foffset @ 1+ foffset ! ;
 
-: v>fi ( faddr -- n ) f@ f>fi ;
-
+\ Parse next float from string delimited by spaces and return the
+\ string for next float
 : slurp-float ( addr0 u0 -- addr1 u1 ) ( F: f0 -- )
   2dup s"  " search
   if
-    2dup >r >r                   \ save next string
+    2dup 2>r                    \ save next string
     swap drop -
     >float invert throw
-    r> r> 1 /string              \ restore next string skip space
+    2r> 1 /string               \ restore next string skip space
   else
     2drop 2 -
     >float invert throw
   then
 ;
 
+\ Parse next integer from string delimited by spaces and return the
+\ string for next integer
 : slurp-integer ( addr0 u0 -- addr1 u1 n )
   2dup s"  " search
   if
-    2dup >r >r                   \ save next string
+    2dup 2>r                   \ save next string
     swap drop -
     0 0 2swap >number 2drop drop
-    r> r> 1 /string rot          \ restore next string skip space
+    2r> 1 /string rot          \ restore next string skip space
   else
     2drop
     0 0 2swap >number 2drop drop
   then
 ;
 
-: add-vertex ( n -- )
-  pad 2 + swap 2 - ( addr u ) \ s" -1.000000 -2.000000 3.000000"
+: add-vertex ( addr u -- ) \ s" -1.000000 -2.000000 3.000000"
   slurp-float f>fi push-v
   slurp-float f>fi push-v
   slurp-float f>fi push-v
 ;
 
-: add-face ( n -- )
-  pad 2 + swap 2 - ( addr u ) \ s" 2 3 1"
+: add-face ( addr u -- ) \ s" 2 3 1"
   slurp-integer push-f
   slurp-integer push-f
   slurp-integer push-f
 ;
 
-: gulp
+: skip-letter ( addr0 u0 -- addr1 u1 ) 2 - swap 2 + swap ;
+
+: gulp ( n -- ) \ parse the pad area, n is pad count
   pad c@
   case
-    [char] v of add-vertex endof
-    [char] f of add-face endof
+    [char] v of pad swap skip-letter add-vertex endof
+    [char] f of pad swap skip-letter add-face endof
     drop
   endcase
 ;
 
-: slurp begin fd>pad ?dup while gulp repeat ;
+: slurp ( -- ) begin fd>pad ?dup while gulp repeat ;
 
 : load-obj ( addr0 u -- vaddr faddr v f )
   open-file count-elements fcount ! vcount !
   rewind
-  vcount @ alloc-buffer vertices !
-  fcount @ alloc-buffer faces !
+  vcount @ allot-buffer vertices !
+  fcount @ allot-buffer faces !
   slurp
   close-file
   vertices @ faces @ vcount @ fcount @
 ;
-
-
-\ \ test data
-\ create vertices1
-\ -1.000000e f>fi , -1.000000e f>fi ,  1.000000e f>fi ,
-\ -1.000000e f>fi ,  1.000000e f>fi ,  1.000000e f>fi ,
-\ -1.000000e f>fi , -1.000000e f>fi , -1.000000e f>fi ,
-\ -1.000000e f>fi ,  1.000000e f>fi , -1.000000e f>fi ,
-\  1.000000e f>fi , -1.000000e f>fi ,  1.000000e f>fi ,
-\  1.000000e f>fi ,  1.000000e f>fi ,  1.000000e f>fi ,
-\  1.000000e f>fi , -1.000000e f>fi , -1.000000e f>fi ,
-\  1.000000e f>fi ,  1.000000e f>fi , -1.000000e f>fi ,
-\ here vertices1 - vector3 / constant #vertices
-\ variable vertices vertices1 vertices !
-\ variable vcount #vertices vcount !
-
-\ create faces1
-\ 2 , 3 , 1 , 
-\ 4 , 7 , 3 , 
-\ 8 , 5 , 7 , 
-\ 6 , 1 , 5 , 
-\ 7 , 1 , 3 , 
-\ 4 , 6 , 8 , 
-\ 2 , 4 , 3 , 
-\ 4 , 8 , 7 , 
-\ 8 , 6 , 5 , 
-\ 6 , 2 , 1 , 
-\ 7 , 5 , 1 , 
-\ 4 , 2 , 6 , 
-\ here faces1 - 1 cells / constant #faces
-\ variable faces faces1 faces !
-\ variable fcount #faces fcount !

@@ -45,12 +45,18 @@ variable sdl-event sdl-event-type-size allot
   color 2 + c!
 ;
 
-: put-pixel ( x y -- )
+: get-pixel-addr ( x y -- addr )
   pixels @ -rot #stride * swap 4 * + +
+;
 
+: set-pixel ( addr -- )
   dup color     c@ swap c!
   dup color 1 + c@ swap 1 + c!
       color 2 + c@ swap 2 + c!
+;
+
+: put-pixel ( x y -- )
+  get-pixel-addr set-pixel
 ;
 
 : clear-screen ( -- )
@@ -59,13 +65,15 @@ variable sdl-event sdl-event-type-size allot
   loop
 ;
 
-SDL_INIT_EVERYTHING sdl-init
-0<> [if] ." Error sdl-init" exit [then]
+: init-sdl
+  SDL_INIT_EVERYTHING sdl-init
+  0<> if ." Error sdl-init" exit then
 
-#width #height 32 SDL_SWSURFACE sdl-set-video-mode
-dup 0< [if] ." Error sdl-set-video-mode" exit [then] surface !
+  #width #height 32 SDL_SWSURFACE sdl-set-video-mode
+  dup 0< if ." Error sdl-set-video-mode" exit then surface !
 
-\ save screen buffer address
-surface @ sdl-pixels-offset + @ pixels !
+  \ save screen buffer address
+  surface @ sdl-pixels-offset + @ pixels !
+;
 
 : flip-screen surface @ sdl-flip throw ;
