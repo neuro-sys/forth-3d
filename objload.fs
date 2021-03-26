@@ -59,7 +59,7 @@ require fp.fs
 ;
 
 \ reserve space in Dictionary area
-: allot-buffer ( n -- addr ) here swap cell * allot ;
+: allot-buffer ( n -- addr ) here swap cells allot ;
 
 0 value voffset
 0 value foffset
@@ -71,13 +71,13 @@ require fp.fs
 : slurp-float ( addr0 u0 -- addr1 u1 ) ( F: f0 -- )
   2dup s"  " search
   if
-    2dup 2>r                    \ save next string
-    swap drop -
-    >float invert throw
-    2r> 1 /string               \ restore next string skip space
+    2dup 1 /string 2>r          \ save next string
+    nip -
+    >float 0= throw
+    2r>                         \ restore next string skip space
   else
     2drop 2 -
-    >float invert throw
+    >float 0= throw
   then
 ;
 
@@ -86,13 +86,24 @@ require fp.fs
 : slurp-integer ( addr0 u0 -- addr1 u1 n )
   2dup s"  " search
   if
-    2dup 2>r                   \ save next string
-    swap drop -
-    0 0 2swap >number 2drop drop
-    2r> 1 /string rot          \ restore next string skip space
+    2dup 1 /string 2>r         \ save next string
+    nip -
+    0. 2swap >number 2drop drop
+    2r> rot                    \ restore next string skip space
   else
     2drop
-    0 0 2swap >number 2drop drop
+    0. 2swap >number 2drop drop
+  then
+;
+
+\ parse normals.
+: slurp-face ( addr u -- ) \ s" 1\2\3 4\5\6 7\8\9 "
+  2dup s"  " search
+  if
+    2dup 2>r
+    
+    2r> 1 /string rot
+  else
   then
 ;
 
@@ -108,7 +119,7 @@ require fp.fs
   slurp-integer push-f
 ;
 
-: skip-letter ( addr0 u0 -- addr1 u1 ) 2 - swap 2 + swap ;
+: skip-letter ( addr0 u0 -- addr1 u1 ) 2 /string ;
 
 : gulp ( n -- ) \ parse the pad area, n is pad count
   pad c@

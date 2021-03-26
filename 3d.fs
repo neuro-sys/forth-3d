@@ -146,7 +146,7 @@ create v2 vector3 allot
   v1 v@ v>proj to z1 to y1 to x1 
   v2 v@ v>proj to z2 to y2 to x2 
 
-  get-average-z currentz !
+  \ get-average-z currentz !
 
   x0 y0 
   x1 y1 
@@ -155,6 +155,7 @@ create v2 vector3 allot
     x1 y1
     x2 y2 scanfill
   then
+
 ;
 
 create v0 vector3 allot
@@ -165,9 +166,10 @@ create v2 vector3 allot
 
   255 255 255 set-color
 
+
   begin
     clear-screen
-    clear-zbuffer
+    \ clear-zbuffer
 
     fcount 0 do
       i     face>vertex v0 v!
@@ -177,8 +179,9 @@ create v2 vector3 allot
       v0 v@ v1 v@ v2 v@ draw-triangle
     3 +loop
 
+
     1000 60 / sdl-delay
-    \ angle @ 1 + angle !
+    angle 1+ to angle
 
     flip-screen
 
@@ -189,7 +192,7 @@ create v2 vector3 allot
   sdl-quit
 ;
 
-s" models/torus.obj" load-obj to fcount to vcount faces ! vertices !
+s" models/monkey.obj" load-obj to fcount to vcount faces ! vertices !
 3d
 
 bye

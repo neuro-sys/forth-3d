@@ -16,8 +16,7 @@ require zbuffer.fs
   x2 x1 - to n
 
   n 0=
-  x1 y pixel-off? or
-  x2 y pixel-off? or invert if 
+  x2 y pixel-off? or 0= if 
     x2 x1 do i y put-pixel loop \ Optimize this bit, inline ASM?
   then
 ;
@@ -38,13 +37,13 @@ require zbuffer.fs
 0 value cur-left-bottom-x
 0 value scanline
 : scan-edges
-  x1 x0 - y1 y0 - dup 0= if 1 else fidiv then to dxdy-left
-  x2 x0 - y2 y0 - dup 0= if 1 else fidiv then to dxdy-right
-  x2 x1 - y2 y1 - dup 0= if 1 else fidiv then to dxdy-left-bottom
+  x1 x0 - y1 y0 - dup 0= if 2drop 1 else fidiv then to dxdy-left
+  x2 x0 - y2 y0 - dup 0= if 2drop 1 else fidiv then to dxdy-right
+  x2 x1 - y2 y1 - dup 0= if 2drop 1 else fidiv then to dxdy-left-bottom
 
-  x0 ficeil to cur-left-x
-  x0 ficeil to cur-right-x
-  x1 ficeil to cur-left-bottom-x
+  x0 to cur-left-x
+  x0 to cur-right-x
+  x1 to cur-left-bottom-x
 
   \ scan top half
   y0 to scanline
@@ -74,7 +73,12 @@ require zbuffer.fs
 ;
 
 : scanfill ( x0 y0 x1 y1 x2 y2 -- )
-  to y2 to x2 to y1 to x1 to y0 to x0
+  ficeil to y2
+  ficeil to x2
+  ficeil to y1
+  ficeil to x1
+  ficeil to y0
+  ficeil to x0
 
   \ sort left right, top down
   y0 y1 > if
