@@ -105,37 +105,47 @@ require fi.fs
   then
 ;
 
+: add-normal ( addr u -- ) \ s" -1.000000 -1.000000 -1.000000"
+  2drop
+;
+
 : add-vertex ( addr u -- ) \ s" -1.000000 -2.000000 3.000000"
   slurp-float f>fi push-v
   slurp-float f>fi push-v
   slurp-float f>fi push-v
 ;
 
-: add-face ( addr u -- ) \ s" 2 3 1"
+: add-index ( addr u -- ) \ s" 2 3 1"
   slurp-integer push-i
   slurp-integer push-i
   slurp-integer push-i
 ;
 
-: skip-letter ( addr0 u0 -- addr1 u1 ) 2 /string ;
+: skip-n ( addr0 u0 n -- addr1 u1 ) /string ;
 
-: gulp ( n -- ) \ parse the pad area, n is pad count
-  pad c@
-  case
-    [char] v of pad swap skip-letter add-vertex endof
-    [char] f of pad swap skip-letter add-face endof
-    drop
-  endcase
+: gulp ( addr n -- )
+  over 2 s" vn" compare 0= if 2 skip-n add-normal exit then
+  over 1 s" v"  compare 0= if 2 skip-n add-vertex exit then
+  over 1 s" f"  compare 0= if 2 skip-n add-index exit then
+
+  2drop
 ;
 
-: slurp ( -- ) begin fd>pad ?dup while gulp repeat ;
+: slurp ( -- ) begin fd>pad ?dup while pad swap gulp repeat ;
+
+: report ( -- )
+  cr ." vertex count: " vcount .
+  cr ." index count: "  icount .
+;
 
 : load-obj ( addr0 u -- vaddr iaddr v f )
+  cr 2dup ." Reading file: " type
   open-file count-elements to icount to vcount
   rewind
   vcount allot-buffer to vertices
   icount allot-buffer to indices
   slurp
   close-file
+  report
   vertices indices vcount icount
 ;
