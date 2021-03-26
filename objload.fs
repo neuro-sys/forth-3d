@@ -117,12 +117,24 @@ constant normal-cells
   then
 ;
 
-\ Parse next integer from string delimited by spaces and return the
-\ string for next integer
-: next-integer ( addr0 u0 -- addr1 u1 n )
-  2dup s"  " search
+\ skip until next space or /
+0 value curchar
+: skip-space-or/ ( addr0 u0 -- addr1 u1 )
+  begin
+    2dup drop c@ to curchar
+    1 /string
+    dup 0=
+    curchar [char] / = or
+    curchar 32 = or
+  until
+;
+
+\ Parse next integer from string delimited by space or "/" and return
+\ the string for next integer
+: next-face-int ( addr0 u0 -- addr1 u1 n )
+  2dup skip-space-or/ dup 0<>
   if
-    2dup 1 /string 2>r         \ save next string
+    2dup 2>r         \ save next string
     nip -
     0. 2swap >number 2drop drop
     2r> rot                    \ restore next string skip space
@@ -157,18 +169,31 @@ constant normal-cells
   z swap position.z + !
 ;
 
-0 value v0
-0 value v1
-0 value v2
+0 value p0
+0 value p1
+0 value p2
+0 value n0
+0 value n1
+0 value n2
 : add-face ( addr u -- ) \ s" 2 3 1"
-  next-integer to v0
-  next-integer to v1
-  next-integer to v2
+  next-face-int to p0
+  next-face-int drop
+  next-face-int to n0
+  next-face-int to p1
+  next-face-int drop
+  next-face-int to n1
+  next-face-int to p2
+  next-face-int drop
+  next-face-int to n2
 
   next-f
-  v0 over face.v0.p + !
-  v1 over face.v1.p + !
-  v2 swap face.v2.p + !
+  p0 over face.v0.p + !
+  p1 over face.v1.p + !
+  p2 over face.v2.p + !
+
+  n0 over face.v0.n + !
+  n1 over face.v1.n + !
+  n2 swap face.v2.n + !
 ;
 
 : gulp ( addr n -- )
@@ -206,5 +231,28 @@ constant normal-cells
 \ positions pcount position-cells * dump
 \ normals   ncount normal-cells   * dump
 \ faces     fcount face-cells     * dump
+
+\ s" 1/2/3 4/5/6 7/8/9"
+\ cr 2dup type
+\ cr skip-space-or/ 2dup type .s
+\ cr skip-space-or/ 2dup type .s
+\ cr skip-space-or/ 2dup type .s
+\ cr skip-space-or/ 2dup type .s
+\ cr skip-space-or/ 2dup type .s
+\ cr skip-space-or/ 2dup type .s
+\ cr skip-space-or/ 2dup type .s
+\ cr skip-space-or/ 2dup type .s
+\ cr skip-space-or/ 2dup type .s
+
+\ s" 1//3 4//6 7//9"
+\ cr next-face-int . 2dup type .s
+\ cr next-face-int . 2dup type .s
+\ cr next-face-int . 2dup type .s
+\ cr next-face-int . 2dup type .s
+\ cr next-face-int . 2dup type .s
+\ cr next-face-int . 2dup type .s
+\ cr next-face-int . 2dup type .s
+\ cr next-face-int . 2dup type .s
+\ cr next-face-int . .s
 
 \ bye

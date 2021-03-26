@@ -21,3 +21,4 @@
 : fifloor ( n0 - n1 )      #fbitmask' and ;
 : ficeil  ( n0 - n1 )      #fbits/2 + fifloor ;
 
+: fi>f    ( fi -- ) ( F: f -- ) 0 swap d>f 0 #fbits d>f f/ ;

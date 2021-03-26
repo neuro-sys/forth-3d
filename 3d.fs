@@ -58,7 +58,7 @@ false value wireframe?
   z
 ;
 
-create t0 0.0e f>fi , 0.0e f>fi , -2.5e f>fi , \ translate vector
+create t0 0.0e f>fi , 0.0e f>fi , -3.5e f>fi , \ translate vector
 create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi , \ scale vector
 45 value angle
 
@@ -115,30 +115,45 @@ create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi , \ scale vector
 create v0 vector3 allot
 create v1 vector3 allot
 create v2 vector3 allot
-: face>vertices ( n -- v0 v1 v2 )
+create n0 vector3 allot
+create n1 vector3 allot
+create n2 vector3 allot
+: face>vertices ( n -- v0 v1 v2 n0 n1 n2 )
   face-at to face
 
   face face.v0.p + @ 1- position-at v@ v0 v!
   face face.v1.p + @ 1- position-at v@ v1 v!
   face face.v2.p + @ 1- position-at v@ v2 v!
 
+  face face.v0.n + @ 1- normal-at v@ n0 v!
+  face face.v1.n + @ 1- normal-at v@ n1 v!
+  face face.v2.n + @ 1- normal-at v@ n2 v!
+
   v0 v@ v1 v@ v2 v@
+  n0 v@ n1 v@ n2 v@
+;
+
+: v>rottrans ( v0 -- v1 )
+  angle xrot
+  angle yrot
+  angle zrot
+  t0 v@ vadd                 \ translate vector
 ;
 
 create v0 vector3 allot
 : v>proj ( v -- x y z )
   v0 v!
   v0 v@ t1 v@ vmul           \ scale vector
-  angle xrot
-  angle yrot
-  angle zrot
-  t0 v@ vadd                 \ translate vector
+  v>rottrans
   >proj                      \ project to screen x0 y0 z0
 ;
 
 create v0 vector3 allot
 create v1 vector3 allot
 create v2 vector3 allot
+create n0 vector3 allot
+create n1 vector3 allot
+create n2 vector3 allot
 0 value x0
 0 value y0
 0 value z0
@@ -149,16 +164,35 @@ create v2 vector3 allot
 0 value y2
 0 value z2
 
+create a1 vector3 allot
+create b1 vector3 allot
+
+: get-abs-max-3 ( a b c -- a )
+  abs rot abs rot abs
+  max max
+;
+  
 : get-average-z z0 z1 z2 + + 3 fidiv ;
 
-: draw-triangle ( v0 v1 v2 -- )
+: draw-triangle ( v0 v1 v2 n0 n1 n2 -- )
+  n2 v! n1 v! n0 v!
   v2 v! v1 v! v0 v!
 
   v0 v@ v>proj to z0 to y0 to x0 \ keep z fixed point
   v1 v@ v>proj to z1 to y1 to x1 
   v2 v@ v>proj to z2 to y2 to x2 
 
-  z0 4 i>fi fidiv 255 i>fi fimul fi>i dup dup set-color
+  0 i>fi 0 i>fi -1 i>fi
+  n0 v@ v>rottrans vnormalize
+  vdot fi>f facos 3.141592e fswap f- 3.141592e f/ 10e f* f>fi
+
+  256 i>fi fimul fi>i
+  dup dup set-color
+
+  \ n0 v.x@ 255 i>fi fimul fi>i
+  \ n0 v.y@ 255 i>fi fimul fi>i
+  \ n0 v.z@ 255 i>fi fimul fi>i
+  \ set-color
 
   \ get-average-z currentz !
 
@@ -181,6 +215,9 @@ create v2 vector3 allot
 create v0 vector3 allot
 create v1 vector3 allot
 create v2 vector3 allot
+create n0 vector3 allot
+create n1 vector3 allot
+create n2 vector3 allot
 : 3d
   s" models/torus.obj" load-obj
   to fcount
@@ -201,9 +238,7 @@ create v2 vector3 allot
     \ clear-zbuffer
 
     fcount 0 do
-      i face>vertices v2 v! v1 v! v0 v!
-
-      v0 v@ v1 v@ v2 v@ draw-triangle
+      i face>vertices draw-triangle
     loop
 
 

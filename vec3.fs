@@ -53,12 +53,18 @@ create v2 vector3 allot
   v0 v.z@ v1 v.z@ fidiv
 ;
 
-: vlensq ( v0 -- n )
+\ https://www.fpgarelated.com/showarticle/1347.php
+\ TODO: cheat with FPU, fix this!
+: vlength ( v0 -- n )
   v0 v!
 
-  v0 v.x@ dup fimul
-  v0 v.y@ dup fimul
-  v0 v.z@ dup fimul + +
+  v0 v.x@ fi>f fdup f*
+  v0 v.y@ fi>f fdup f* 
+  v0 v.z@ fi>f fdup f* f+ f+ fsqrt f>fi
+
+  \ v0 v.x@ dup fimul
+  \ v0 v.y@ dup fimul
+  \ v0 v.z@ dup fimul + +
 ;
 
 : vdot ( v0 v1 -- n )
@@ -92,3 +98,26 @@ create v2 vector3 allot
   vcross
 ;
 
+: vnormalize ( v0 -- v1 )
+  v0 v!
+  v0 v@
+  v0 v@ vlength dup dup
+  vdiv
+;
+
+\ 1 i>fi 2 i>fi 3 i>fi
+\ 1 i>fi 5 i>fi 7 i>fi vdot fi>i .s
+
+\ \ 1 i>fi 2 i>fi 3 i>fi .s vnormalize .s
+\ bye
+
+\ 0e 16384e f/
+\ 0e 16384e f/
+\ -16384e 16384e f/
+
+\ 54e 16384e f/
+\ 4879e 16384e f/
+\ -16384e 16384e f/
+
+\ f.s
+\ bye
