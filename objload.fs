@@ -19,7 +19,7 @@
 \
 \ # How to use
 \
-\ load-obj ( addr0 u -- vaddr faddr v f )
+\ load-obj ( addr0 u -- vaddr iaddr v f )
 \
 \ addr0 u is the string that contains the file name for the OBJ file.
 \
@@ -27,26 +27,26 @@
 \ position coordinates per vertex in fixed point format 1.12 (see
 \ #fbits).
 \
-\ faddr contains the address of an array that contains the integer
-\ offsets into the vertex buffer that forms a triagle.
+\ iaddr contains the address of an array that contains the integer
+\ indeces into the vertex buffer that forms a triagle.
 \
 
 require fi.fs
 
 0 value fd              \ file handle
 0 value vertices        \ fixed point vertex positions of mesh
-0 value faces           \ vertex indices
+0 value indices         \ vertex indices
 0 value vcount          \ number of vertices
-0 value fcount          \ number of faces
+0 value icount          \ number of indices
 
 \ file related words
 : fd>pad ( -- u )       pad 80 fd read-line throw drop ;
 : open ( addr u -- fd ) r/o open-file throw ;
 : open-file ( addr u )  open to fd ;
 : close-file ( -- )     fd close-file throw ;
-: rewind ( -- )         0 0 fd reposition-file throw ;
+: rewind ( -- )         0. fd reposition-file throw ;
 
-\ Count the number of vertices and faces in currently open file
+\ Count the number of vertices and indices in currently open file
 : count-elements ( -- v f )
   0 0 \ vertex face counters
   begin
@@ -61,9 +61,9 @@ require fi.fs
 : allot-buffer ( n -- addr ) here swap cells allot ;
 
 0 value voffset
-0 value foffset
+0 value ioffset
 : push-v ( n -- ) vertices voffset cells + ! voffset 1+ to voffset ;
-: push-f ( n -- ) faces foffset cells + ! foffset 1+ to foffset ;
+: push-i ( n -- ) indices ioffset cells + ! ioffset 1+ to ioffset ;
 
 \ Parse next float from string delimited by spaces and return the
 \ string for next float
@@ -112,9 +112,9 @@ require fi.fs
 ;
 
 : add-face ( addr u -- ) \ s" 2 3 1"
-  slurp-integer push-f
-  slurp-integer push-f
-  slurp-integer push-f
+  slurp-integer push-i
+  slurp-integer push-i
+  slurp-integer push-i
 ;
 
 : skip-letter ( addr0 u0 -- addr1 u1 ) 2 /string ;
@@ -130,12 +130,12 @@ require fi.fs
 
 : slurp ( -- ) begin fd>pad ?dup while gulp repeat ;
 
-: load-obj ( addr0 u -- vaddr faddr v f )
-  open-file count-elements to fcount to vcount
+: load-obj ( addr0 u -- vaddr iaddr v f )
+  open-file count-elements to icount to vcount
   rewind
   vcount allot-buffer to vertices
-  fcount allot-buffer to faces
+  icount allot-buffer to indices
   slurp
   close-file
-  vertices faces vcount fcount
+  vertices indices vcount icount
 ;

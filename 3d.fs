@@ -11,9 +11,9 @@ require vec3.fs
 require scanfill.fs
 
 variable vertices
-variable faces
+variable indices
 0 value vcount
-0 value fcount
+0 value icount
 
 false value wireframe?
 
@@ -109,8 +109,8 @@ create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi , \ scale vector
   costable a cells + @ z fimul +
 ;
 
-: face>vertex ( f -- x y z )
-  cells faces @ + @ 1-         \ face index
+: index>vertex ( f -- x y z )
+  cells indices @ + @ 1-         \ vertex index
   vector3 * vertices @ + v@    \ vertex position
 ;
 
@@ -181,10 +181,10 @@ create v2 vector3 allot
     clear-screen
     \ clear-zbuffer
 
-    fcount 0 do
-      i     face>vertex v0 v!
-      i 1 + face>vertex v1 v!
-      i 2 + face>vertex v2 v!
+    icount 0 do
+      i     index>vertex v0 v!
+      i 1 + index>vertex v1 v!
+      i 2 + index>vertex v2 v!
 
       v0 v@ v1 v@ v2 v@ draw-triangle
     3 +loop
@@ -202,7 +202,7 @@ create v2 vector3 allot
   sdl-quit
 ;
 
-s" models/torus.obj" load-obj to fcount to vcount faces ! vertices !
+s" models/torus.obj" load-obj to icount to vcount indices ! vertices !
 3d
 
 bye
