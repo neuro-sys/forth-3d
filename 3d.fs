@@ -13,26 +13,26 @@ require scanfill.fs
 
 variable vertices
 variable faces
-variable vcount
-variable fcount
+0 value vcount
+0 value fcount
 
-variable x0
-variable y0
-variable x1
-variable y1
-variable x2
-variable y2
+0 value x0
+0 value y0
+0 value x1
+0 value y1
+0 value x2
+0 value y2
 : visible? ( x0 y0 x1 y1 x2 y2 -- t )
-  y2 ! x2 ! y1 ! x1 ! y0 ! x0 !
+  to y2 to x2 to y1 to x1 to y0 to x0
 
-  x1 @ x0 @ -
-  y1 @ y0 @ + fimul
+  x1 x0 -
+  y1 y0 + fimul
 
-  x2 @ x1 @ -
-  y2 @ y1 @ + fimul
+  x2 x1 -
+  y2 y1 + fimul
 
-  x0 @ x2 @ -
-  y0 @ y2 @ + fimul
+  x0 x2 -
+  y0 y2 + fimul
 
   + + 0 <=
 ;
@@ -43,69 +43,69 @@ variable y2
   
 : >p  ( z p -- p1 )  #dist fimul swap fidiv ;
 
-variable x
-variable y
-variable z
+0 value x
+0 value y
+0 value z
 : >proj ( x0 y0 z0 -- x1 y1 z1 )
-  z ! y ! x !
+  to z to y to x
 
-  z @ 0= if 0 0 rdrop then
-  z @ x @ >p #width-half +
-  z @ y @ >p #height-half +
-  z @
+  z 0= if 0 0 rdrop then
+  z x >p #width-half +
+  z y >p #height-half +
+  z
 ;
 
 create t0 0.0e f>fi , 0.0e f>fi , -2.5e f>fi , \ translate vector
 create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi , \ scale vector
-variable angle 0 angle !
+45 value angle
 
-variable x
-variable y
-variable z
-variable a
+0 value x
+0 value y
+0 value z
+0 value a
 \ x = x cos β − y sin β
 \ y = x sin β + y cos β
 \ z = z
 : zrot ( x y z a -- x y z )
-  360 mod a ! z ! y ! x !
+  360 mod to a to z to y to x
 
-  costable a @ cells + @ x @ fimul
-  sintable a @ cells + @ y @ fimul -
+  costable a cells + @ x fimul
+  sintable a cells + @ y fimul -
 
-  sintable a @ cells + @ x @ fimul
-  costable a @ cells + @ y @ fimul +
+  sintable a cells + @ x fimul
+  costable a cells + @ y fimul +
 
-  z @
+  z
 ;
 
 \ x = z sin β + x cos β
 \ y = y
 \ z = z cos β − x sin β
 : yrot ( x y z a -- x y z )
-  360 mod a ! z ! y ! x !
+  360 mod to a to z to y to x
 
-  sintable a @ cells + @ z @ fimul
-  costable a @ cells + @ x @ fimul +
+  sintable a cells + @ z fimul
+  costable a cells + @ x fimul +
 
-  y @
+  y
 
-  costable a @ cells + @ z @ fimul
-  sintable a @ cells + @ x @ fimul -
+  costable a cells + @ z fimul
+  sintable a cells + @ x fimul -
 ;
 
 \ x = x
 \ y = y cos β − z sin β
 \ z = y sin β + z cos β
 : xrot ( x y z a -- x y z )
-  360 mod a ! z ! y ! x !
+  360 mod to a to z to y to x
 
-  x @
+  x
 
-  costable a @ cells + @ y @ fimul
-  sintable a @ cells + @ z @ fimul -
+  costable a cells + @ y fimul
+  sintable a cells + @ z fimul -
 
-  sintable a @ cells + @ y @ fimul
-  costable a @ cells + @ z @ fimul +
+  sintable a cells + @ y fimul
+  costable a cells + @ z fimul +
 ;
 
 : face>vertex ( f -- x y z )
@@ -117,9 +117,9 @@ create v0 vector3 allot
 : v>proj ( v -- x y z )
   v0 v!
   v0 v@ t1 v@ vmul           \ scale vector
-  angle @ xrot
-  angle @ yrot
-  angle @ zrot
+  angle xrot
+  angle yrot
+  angle zrot
   t0 v@ vadd                 \ translate vector
   >proj                      \ project to screen x0 y0 z0
 ;
@@ -127,33 +127,33 @@ create v0 vector3 allot
 create v0 vector3 allot
 create v1 vector3 allot
 create v2 vector3 allot
-variable x0
-variable y0
-variable z0
-variable x1
-variable y1
-variable z1
-variable x2
-variable y2
-variable z2
+0 value x0
+0 value y0
+0 value z0
+0 value x1
+0 value y1
+0 value z1
+0 value x2
+0 value y2
+0 value z2
 
-: get-average-z z0 @ z1 @ z2 @ + + 3 fidiv ;
+: get-average-z z0 z1 z2 + + 3 fidiv ;
 
 : draw-triangle ( v0 v1 v2 -- )
   v2 v! v1 v! v0 v!
 
-  v0 v@ v>proj z0 ! y0 ! x0 ! \ keep z fixed point
-  v1 v@ v>proj z1 ! y1 ! x1 ! 
-  v2 v@ v>proj z2 ! y2 ! x2 ! 
+  v0 v@ v>proj to z0 to y0 to x0 \ keep z fixed point
+  v1 v@ v>proj to z1 to y1 to x1 
+  v2 v@ v>proj to z2 to y2 to x2 
 
   get-average-z currentz !
 
-  x0 @ y0 @ 
-  x1 @ y1 @ 
-  x2 @ y2 @ visible? if
-    x0 @ y0 @ 
-    x1 @ y1 @ 
-    x2 @ y2 @ scanfill
+  x0 y0 
+  x1 y1 
+  x2 y2 visible? if
+    x0 y0
+    x1 y1
+    x2 y2 scanfill
   then
 ;
 
@@ -169,7 +169,7 @@ create v2 vector3 allot
     clear-screen
     clear-zbuffer
 
-    fcount @ 0 do
+    fcount 0 do
       i     face>vertex v0 v!
       i 1 + face>vertex v1 v!
       i 2 + face>vertex v2 v!
@@ -178,7 +178,7 @@ create v2 vector3 allot
     3 +loop
 
     1000 60 / sdl-delay
-    angle @ 1 + angle !
+    \ angle @ 1 + angle !
 
     flip-screen
 
@@ -189,7 +189,7 @@ create v2 vector3 allot
   sdl-quit
 ;
 
-s" models/torus.obj" load-obj fcount ! vcount ! faces ! vertices !
+s" models/torus.obj" load-obj to fcount to vcount faces ! vertices !
 3d
 
 bye

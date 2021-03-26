@@ -21,8 +21,8 @@ c-function sdl-delay            SDL_Delay           n -- void
 
 end-c-library
 
-640 constant #width
-480 constant #height
+1024 constant #width
+768  constant #height
 
 #width 4 * constant #stride
 

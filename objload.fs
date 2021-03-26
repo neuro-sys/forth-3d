@@ -34,18 +34,18 @@ require fp.fs
 
 0 warnings !
 
-variable fd              \ file handle
-variable vertices        \ fixed point vertex positions of mesh
-variable faces           \ vertex indices
-variable vcount          \ number of vertices
-variable fcount          \ number of faces
+0 value fd              \ file handle
+0 value vertices        \ fixed point vertex positions of mesh
+0 value faces           \ vertex indices
+0 value vcount          \ number of vertices
+0 value fcount          \ number of faces
 
 \ file related words
-: fd>pad ( -- u )       pad 80 fd @ read-line throw drop ;
+: fd>pad ( -- u )       pad 80 fd read-line throw drop ;
 : open ( addr u -- fd ) r/o open-file throw ;
-: open-file ( addr u )  open fd ! ;
-: close-file ( -- )     fd @ close-file throw ;
-: rewind ( -- )         0 0 fd @ reposition-file throw ;
+: open-file ( addr u )  open to fd ;
+: close-file ( -- )     fd close-file throw ;
+: rewind ( -- )         0 0 fd reposition-file throw ;
 
 \ Count the number of vertices and faces in currently open file
 : count-elements ( -- v f )
@@ -61,10 +61,10 @@ variable fcount          \ number of faces
 \ reserve space in Dictionary area
 : allot-buffer ( n -- addr ) here swap cell * allot ;
 
-variable voffset 0 voffset !
-variable foffset 0 foffset !
-: push-v ( n -- ) vertices @ voffset @ cells + ! voffset @ 1+ voffset ! ;
-: push-f ( n -- ) faces @ foffset @ cells + ! foffset @ 1+ foffset ! ;
+0 value voffset
+0 value foffset
+: push-v ( n -- ) vertices voffset cells + ! voffset 1+ to voffset ;
+: push-f ( n -- ) faces foffset cells + ! foffset 1+ to foffset ;
 
 \ Parse next float from string delimited by spaces and return the
 \ string for next float
@@ -122,11 +122,11 @@ variable foffset 0 foffset !
 : slurp ( -- ) begin fd>pad ?dup while gulp repeat ;
 
 : load-obj ( addr0 u -- vaddr faddr v f )
-  open-file count-elements fcount ! vcount !
+  open-file count-elements to fcount to vcount
   rewind
-  vcount @ allot-buffer vertices !
-  fcount @ allot-buffer faces !
+  vcount allot-buffer to vertices
+  fcount allot-buffer to faces
   slurp
   close-file
-  vertices @ faces @ vcount @ fcount @
+  vertices faces vcount fcount
 ;

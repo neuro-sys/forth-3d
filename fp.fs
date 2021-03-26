@@ -1,5 +1,8 @@
 \ fixed point format
-1 8 lshift value #fbits
+1 15 lshift       value #fbits
+#fbits 1-        constant #fbitmask
+#fbitmask invert constant #fbitmask'
+#fbits 1 rshift  constant #fbits/2
 
 \ fixed point 1.15 format
 : i>fi   ( d -- fi )       #fbits * ;
@@ -11,4 +14,6 @@
   fdup f>d drop #fbits * 1.0e fmod #fbits 0 d>f f* f>d drop + ;
 : i3>fi3 ( a b c - a b c ) i>fi rot i>fi rot i>fi rot ;
 : fi3>i3 ( a b c - a b c ) fi>i rot fi>i rot fi>i rot ;
-: fifloor ( n0 - n1 )      #fbits 1- invert and ;
+: fifloor ( n0 - n1 )      #fbitmask' and ;
+: ficeil  ( n0 - n1 )      #fbits/2 + fifloor ;
+
