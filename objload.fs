@@ -3,33 +3,41 @@
 \
 \ # WaveFront OBJ File Format
 \
-\ The file contains a text representation of a 3D scene. A minimal
-\ file looks like the following:
+\ The file contains a text representation of a 3D scene. A minimal and
+\ supported file format looks like the following:
 \ 
 \ v -1.000000 -1.000000 1.000000
 \ v -1.000000 1.000000 1.000000
 \ v -1.000000 -1.000000 -1.000000
-\ f 2 3 1
+\ vn -1.000000 0.000000 0.000000
+\ vn -1.000000 0.000000 0.000000
+\ vn -1.000000 0.000000 0.000000
+\ f 2//1 3//1 1//1
 \
-\ The line that starts with letter "v" denotes the 3 floats denoting
-\ the vertex positions X, Y and Z.
+\ The line that starts with letter "v" denotes the position vector X,
+\ Y and Z.
 \
-\ The letter "f" denotes the face positions (starting from 1) into
-\ the vertex list forming a triangle.
+\ The letters "vn" denote the 3 floats denoting the normal vector X, Y
+\ and Z.
+\
+\ The letter "f" denotes the face indices (starting from 1) into the
+\ vertex list forming a triangle, and normal indices respectively.
 \
 \ # How to use
 \
-\ load-obj ( addr0 u -- vaddr iaddr v f )
+\ load-obj ( addr0 u -- paddr naddr iaddr p n i )
 \
 \ addr0 u is the string that contains the file name for the OBJ file.
 \
-\ vaddr contains the address of an array that contains x, y, z
-\ position coordinates per vertex in fixed point format 1.12 (see
-\ #fbits).
+\ paddr is the array of vertex positions.
 \
-\ iaddr contains the address of an array that contains the integer
-\ indeces into the vertex buffer that forms a triagle.
+\ naddr is the array of normal positions.
 \
+\ iaddr is the array of vertex and normal indices interleaved. See
+\ face-cells for layout
+\
+\ p, n and i are the count of elements for each of the arrays
+\ respectively.
 
 require fi.fs
 
@@ -63,11 +71,11 @@ constant normal-cells
 0 value fcount          \ number of offset faces
 
 \ file related words
-: fd>pad ( -- u )       pad 80 fd read-line throw drop ;
+: fd>pad       ( -- u ) pad 80 fd read-line throw drop ;
 : open ( addr u -- fd ) r/o open-file throw ;
-: open-file ( addr u )  open to fd ;
-: close-file ( -- )     fd close-file throw ;
-: rewind ( -- )         0. fd reposition-file throw ;
+: open-file  ( addr u ) open to fd ;
+: close-file     ( -- ) fd close-file throw ;
+: rewind         ( -- ) 0. fd reposition-file throw ;
 
 \ Count the number of positions and faces in currently open file
 0 value position
@@ -84,7 +92,6 @@ constant normal-cells
     pad 2 s" v "  compare 0= if position 1+ to position then
     pad 2 s" f "  compare 0= if index 1+ to index then
   repeat
-
   position to pcount
   normal to ncount
   index to fcount
@@ -95,8 +102,8 @@ constant normal-cells
 0 value foffset
 
 : position-at ( n -- adr ) position-cells * positions + ;
-: normal-at ( n -- adr )   normal-cells   * normals + ;
-: face-at ( n -- adr )     face-cells     * faces + ;
+: normal-at   ( n -- adr ) normal-cells   * normals + ;
+: face-at     ( n -- adr ) face-cells     * faces + ;
 
 : next-p ( -- addr )     poffset position-at poffset 1+ to poffset ;
 : next-n ( -- addr )     noffset normal-at   noffset 1+ to noffset ;
@@ -118,14 +125,13 @@ constant normal-cells
 ;
 
 \ skip until next space or /
-0 value curchar
 : skip-space-or/ ( addr0 u0 -- addr1 u1 )
   begin
-    2dup drop c@ to curchar
+    2dup drop c@ >r
     1 /string
     dup 0=
-    curchar [char] / = or
-    curchar 32 = or
+    r@ [char] / = or
+    r> 32 = or
   until
 ;
 
@@ -137,36 +143,33 @@ constant normal-cells
     2dup 2>r         \ save next string
     nip -
     0. 2swap >number 2drop drop
-    2r> rot                    \ restore next string skip space
+    2r> rot          \ restore next string skip space
   else
     2drop
     0. 2swap >number 2drop drop
   then
 ;
 
-0 value x
-0 value y
-0 value z
 : add-normal ( addr u -- ) \ s" -1.000000 -1.000000 -1.000000"
-  next-float f>fi to x
-  next-float f>fi to y
-  next-float f>fi to z
+  next-float f>fi >r
+  next-float f>fi >r
+  next-float f>fi >r
 
   next-n
-  x over normal.x + !
-  y over normal.y + !
-  z swap normal.z + !
+  r> over normal.z + !
+  r> over normal.y + !
+  r> swap normal.x + !
 ;
 
 : add-vertex ( addr u -- ) \ s" -1.000000 -2.000000 3.000000"
-  next-float f>fi to x
-  next-float f>fi to y
-  next-float f>fi to z
+  next-float f>fi >r
+  next-float f>fi >r
+  next-float f>fi >r
 
   next-p
-  x over position.x + !
-  y over position.y + !
-  z swap position.z + !
+  r> over position.z + !
+  r> over position.y + !
+  r> swap position.x + !
 ;
 
 0 value p0
@@ -199,7 +202,7 @@ constant normal-cells
 : gulp ( addr n -- )
   over 3 s" vn " compare 0= if 3 /string add-normal exit then
   over 2 s" v "  compare 0= if 2 /string add-vertex exit then
-  over 2 s" f "  compare 0= if 2 /string add-face  exit then
+  over 2 s" f "  compare 0= if 2 /string add-face   exit then
 
   2drop
 ;
@@ -228,10 +231,11 @@ constant normal-cells
 \ s" models/cube.obj" load-obj
 \ to fcount to ncount to pcount
 \ to faces to normals to positions
-\ positions pcount position-cells * dump
-\ normals   ncount normal-cells   * dump
-\ faces     fcount face-cells     * dump
+\ cr ." Positions: " positions pcount position-cells * dump
+\ cr ." Normals: " normals   ncount normal-cells   * dump
+\ cr ." Faces: " faces     fcount face-cells     * dump
 
+\ bye
 \ s" 1/2/3 4/5/6 7/8/9"
 \ cr 2dup type
 \ cr skip-space-or/ 2dup type .s

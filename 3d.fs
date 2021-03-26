@@ -219,7 +219,7 @@ create n0 vector3 allot
 create n1 vector3 allot
 create n2 vector3 allot
 : 3d
-  s" models/torus.obj" load-obj
+  s" models/monkey.obj" load-obj
   to fcount
   to ncount
   to pcount
