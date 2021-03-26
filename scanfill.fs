@@ -1,5 +1,5 @@
 require sdl.fs
-require fp.fs
+require fi.fs
 require zbuffer.fs
 
 0 value y

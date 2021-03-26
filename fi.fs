@@ -1,5 +1,9 @@
+\ This file provide fixed-point number related words. It is useful
+\ when FPU is not available, or too slow compared to fixed point when
+\ it provides good enough precision.
+
 \ fixed point format
-1 15 lshift       value #fbits
+1 14 lshift      value #fbits           \ 4.14 for 16-bit words
 #fbits 1-        constant #fbitmask
 #fbitmask invert constant #fbitmask'
 #fbits 1 rshift  constant #fbits/2

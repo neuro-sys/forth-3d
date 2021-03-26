@@ -17,7 +17,6 @@ c-function sdl-flip             SDL_Flip            a -- n
 c-function sdl-quit             SDL_Quit            -- void
 c-function sdl-delay            SDL_Delay           n -- void
 c-function sdl-poll-event       SDL_PollEvent       a -- void
-c-function sdl-delay            SDL_Delay           n -- void
 
 end-c-library
 

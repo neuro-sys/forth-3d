@@ -1,10 +1,9 @@
 \ 3d drawing with fixed point arithmetic
 \ 
-0 warnings !
 
 require sdl.fs
 require objload.fs
-require fp.fs
+require fi.fs
 require zbuffer.fs
 require line.fs
 require trig.fs
@@ -15,6 +14,8 @@ variable vertices
 variable faces
 0 value vcount
 0 value fcount
+
+false value wireframe?
 
 0 value x0
 0 value y0
@@ -146,14 +147,22 @@ create v2 vector3 allot
   v1 v@ v>proj to z1 to y1 to x1 
   v2 v@ v>proj to z2 to y2 to x2 
 
+  z0 4 i>fi fidiv 255 i>fi fimul fi>i dup dup set-color
+
   \ get-average-z currentz !
 
   x0 y0 
   x1 y1 
   x2 y2 visible? if
-    x0 y0
-    x1 y1
-    x2 y2 scanfill
+    wireframe? if
+      x0 fi>i y0 fi>i x1 fi>i y1 fi>i line
+      x1 fi>i y1 fi>i x2 fi>i y2 fi>i line
+      x2 fi>i y2 fi>i x0 fi>i y0 fi>i line
+    else
+      x0 y0
+      x1 y1
+      x2 y2 scanfill
+    then
   then
 
 ;
@@ -166,6 +175,7 @@ create v2 vector3 allot
 
   255 255 255 set-color
 
+  false to wireframe?
 
   begin
     clear-screen
@@ -192,7 +202,7 @@ create v2 vector3 allot
   sdl-quit
 ;
 
-s" models/monkey.obj" load-obj to fcount to vcount faces ! vertices !
+s" models/torus.obj" load-obj to fcount to vcount faces ! vertices !
 3d
 
 bye

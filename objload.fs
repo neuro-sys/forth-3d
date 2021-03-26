@@ -24,15 +24,14 @@
 \ addr0 u is the string that contains the file name for the OBJ file.
 \
 \ vaddr contains the address of an array that contains x, y, z
-\ coordinates per vertex in fixed point format 1.15 (see #fbits).
+\ position coordinates per vertex in fixed point format 1.12 (see
+\ #fbits).
 \
 \ faddr contains the address of an array that contains the integer
 \ offsets into the vertex buffer that forms a triagle.
 \
 
-require fp.fs
-
-0 warnings !
+require fi.fs
 
 0 value fd              \ file handle
 0 value vertices        \ fixed point vertex positions of mesh
@@ -96,7 +95,6 @@ require fp.fs
   then
 ;
 
-\ parse normals.
 : slurp-face ( addr u -- ) \ s" 1\2\3 4\5\6 7\8\9 "
   2dup s"  " search
   if

@@ -78,23 +78,23 @@ require zbuffer.fs
   then
 ;
 
-#width 2/ value ox
-#height 2/ value oy
-: line-test
-  init-sdl
+\ #width 2/ value ox
+\ #height 2/ value oy
+\ : line-test
+\   init-sdl
 
-  255 255 255 set-color
+\   255 255 255 set-color
 
-  ox oy ox 20 + oy 50 - line \ sector 0
-  ox oy ox 50 + oy 20 + line \ sector 1
-  ox oy ox 50 + oy 20 - line \ sector 2
-  ox oy ox 20 + oy 50 + line \ sector 3
-  ox oy ox 20 - oy 50 - line \ sector 4
-  ox oy ox 50 - oy 20 + line \ sector 5
-  ox oy ox 50 - oy 20 - line \ sector 6
-  ox oy ox 20 - oy 50 + line \ sector 7
+\   ox oy ox 20 + oy 50 - line \ sector 0
+\   ox oy ox 50 + oy 20 + line \ sector 1
+\   ox oy ox 50 + oy 20 - line \ sector 2
+\   ox oy ox 20 + oy 50 + line \ sector 3
+\   ox oy ox 20 - oy 50 - line \ sector 4
+\   ox oy ox 50 - oy 20 + line \ sector 5
+\   ox oy ox 50 - oy 20 - line \ sector 6
+\   ox oy ox 20 - oy 50 + line \ sector 7
 
-  flip-screen
-  wait-key
-  sdl-quit
-;
+\   flip-screen
+\   wait-key
+\   sdl-quit
+\ ;
