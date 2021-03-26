@@ -10,10 +10,12 @@ require trig.fs
 require vec3.fs
 require scanfill.fs
 
-variable vertices
-variable indices
-0 value vcount
-0 value icount
+0 value positions       \ array of vertex positions
+0 value normals         \ array of vertex normals
+0 value faces           \ array of index-cells
+0 value pcount          \ number of x, y, z positions
+0 value ncount          \ number of x, y, z normals
+0 value fcount          \ number of offset faces
 
 false value wireframe?
 
@@ -109,9 +111,18 @@ create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi , \ scale vector
   costable a cells + @ z fimul +
 ;
 
-: index>vertex ( f -- x y z )
-  cells indices @ + @ 1-         \ vertex index
-  vector3 * vertices @ + v@    \ vertex position
+0 value face
+create v0 vector3 allot
+create v1 vector3 allot
+create v2 vector3 allot
+: face>vertices ( n -- v0 v1 v2 )
+  face-at to face
+
+  face face.v0.p + @ 1- position-at v@ v0 v!
+  face face.v1.p + @ 1- position-at v@ v1 v!
+  face face.v2.p + @ 1- position-at v@ v2 v!
+
+  v0 v@ v1 v@ v2 v@
 ;
 
 create v0 vector3 allot
@@ -171,6 +182,14 @@ create v0 vector3 allot
 create v1 vector3 allot
 create v2 vector3 allot
 : 3d
+  s" models/torus.obj" load-obj
+  to fcount
+  to ncount
+  to pcount
+  to faces
+  to normals
+  to positions
+
   init-sdl
 
   255 255 255 set-color
@@ -181,13 +200,11 @@ create v2 vector3 allot
     clear-screen
     \ clear-zbuffer
 
-    icount 0 do
-      i     index>vertex v0 v!
-      i 1 + index>vertex v1 v!
-      i 2 + index>vertex v2 v!
+    fcount 0 do
+      i face>vertices v2 v! v1 v! v0 v!
 
       v0 v@ v1 v@ v2 v@ draw-triangle
-    3 +loop
+    loop
 
 
     1000 60 / sdl-delay
@@ -202,7 +219,6 @@ create v2 vector3 allot
   sdl-quit
 ;
 
-s" models/torus.obj" load-obj to icount to vcount indices ! vertices !
 3d
 
 bye

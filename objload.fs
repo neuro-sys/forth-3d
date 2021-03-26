@@ -14,7 +14,7 @@
 \ The line that starts with letter "v" denotes the 3 floats denoting
 \ the vertex positions X, Y and Z.
 \
-\ The letter "f" denotes the index positions (starting from 1) into
+\ The letter "f" denotes the face positions (starting from 1) into
 \ the vertex list forming a triangle.
 \
 \ # How to use
@@ -33,11 +33,34 @@
 
 require fi.fs
 
+0
+dup constant face.v0.p cell +
+dup constant face.v0.n cell +
+dup constant face.v1.p cell +
+dup constant face.v1.n cell +
+dup constant face.v2.p cell +
+dup constant face.v2.n cell +
+constant face-cells
+
+0
+dup constant position.x cell +
+dup constant position.y cell +
+dup constant position.z cell +
+constant position-cells
+
+0
+dup constant normal.x cell +
+dup constant normal.y cell +
+dup constant normal.z cell +
+constant normal-cells
+
 0 value fd              \ file handle
-0 value vertices        \ fixed point vertex positions of mesh
-0 value indices         \ vertex indices
-0 value vcount          \ number of vertices
-0 value icount          \ number of indices
+0 value positions       \ array of vertex positions
+0 value normals         \ array of vertex normals
+0 value faces           \ array of face-cells
+0 value pcount          \ number of x, y, z positions
+0 value ncount          \ number of x, y, z normals
+0 value fcount          \ number of offset faces
 
 \ file related words
 : fd>pad ( -- u )       pad 80 fd read-line throw drop ;
@@ -46,28 +69,42 @@ require fi.fs
 : close-file ( -- )     fd close-file throw ;
 : rewind ( -- )         0. fd reposition-file throw ;
 
-\ Count the number of vertices and indices in currently open file
-: count-elements ( -- v f )
-  0 0 \ vertex face counters
+\ Count the number of positions and faces in currently open file
+0 value position
+0 value normal
+0 value index
+: count-elements ( -- position normal index )
+  0 to position
+  0 to normal
+  0 to index
   begin
     fd>pad
   while
-    pad c@ [char] v = if swap 3 + swap then
-    pad c@ [char] f = if 3 + then
+    pad 3 s" vn " compare 0= if normal 1+ to normal then
+    pad 2 s" v "  compare 0= if position 1+ to position then
+    pad 2 s" f "  compare 0= if index 1+ to index then
   repeat
+
+  position to pcount
+  normal to ncount
+  index to fcount
 ;
 
-\ reserve space in Dictionary area
-: allot-buffer ( n -- addr ) here swap cells allot ;
+0 value poffset
+0 value noffset
+0 value foffset
 
-0 value voffset
-0 value ioffset
-: push-v ( n -- ) vertices voffset cells + ! voffset 1+ to voffset ;
-: push-i ( n -- ) indices ioffset cells + ! ioffset 1+ to ioffset ;
+: position-at ( n -- adr ) position-cells * positions + ;
+: normal-at ( n -- adr )   normal-cells   * normals + ;
+: face-at ( n -- adr )     face-cells     * faces + ;
+
+: next-p ( -- addr )     poffset position-at poffset 1+ to poffset ;
+: next-n ( -- addr )     noffset normal-at   noffset 1+ to noffset ;
+: next-f ( -- addr )     foffset face-at     foffset 1+ to foffset ;
 
 \ Parse next float from string delimited by spaces and return the
 \ string for next float
-: slurp-float ( addr0 u0 -- addr1 u1 ) ( F: f0 -- )
+: next-float ( addr0 u0 -- addr1 u1 ) ( F: f0 -- )
   2dup s"  " search
   if
     2dup 1 /string 2>r          \ save next string
@@ -82,7 +119,7 @@ require fi.fs
 
 \ Parse next integer from string delimited by spaces and return the
 \ string for next integer
-: slurp-integer ( addr0 u0 -- addr1 u1 n )
+: next-integer ( addr0 u0 -- addr1 u1 n )
   2dup s"  " search
   if
     2dup 1 /string 2>r         \ save next string
@@ -95,57 +132,79 @@ require fi.fs
   then
 ;
 
-: slurp-face ( addr u -- ) \ s" 1\2\3 4\5\6 7\8\9 "
-  2dup s"  " search
-  if
-    2dup 2>r
-    
-    2r> 1 /string rot
-  else
-  then
-;
-
+0 value x
+0 value y
+0 value z
 : add-normal ( addr u -- ) \ s" -1.000000 -1.000000 -1.000000"
-  2drop
+  next-float f>fi to x
+  next-float f>fi to y
+  next-float f>fi to z
+
+  next-n
+  x over normal.x + !
+  y over normal.y + !
+  z swap normal.z + !
 ;
 
 : add-vertex ( addr u -- ) \ s" -1.000000 -2.000000 3.000000"
-  slurp-float f>fi push-v
-  slurp-float f>fi push-v
-  slurp-float f>fi push-v
+  next-float f>fi to x
+  next-float f>fi to y
+  next-float f>fi to z
+
+  next-p
+  x over position.x + !
+  y over position.y + !
+  z swap position.z + !
 ;
 
-: add-index ( addr u -- ) \ s" 2 3 1"
-  slurp-integer push-i
-  slurp-integer push-i
-  slurp-integer push-i
-;
+0 value v0
+0 value v1
+0 value v2
+: add-face ( addr u -- ) \ s" 2 3 1"
+  next-integer to v0
+  next-integer to v1
+  next-integer to v2
 
-: skip-n ( addr0 u0 n -- addr1 u1 ) /string ;
+  next-f
+  v0 over face.v0.p + !
+  v1 over face.v1.p + !
+  v2 swap face.v2.p + !
+;
 
 : gulp ( addr n -- )
-  over 2 s" vn" compare 0= if 2 skip-n add-normal exit then
-  over 1 s" v"  compare 0= if 2 skip-n add-vertex exit then
-  over 1 s" f"  compare 0= if 2 skip-n add-index exit then
+  over 3 s" vn " compare 0= if 3 /string add-normal exit then
+  over 2 s" v "  compare 0= if 2 /string add-vertex exit then
+  over 2 s" f "  compare 0= if 2 /string add-face  exit then
 
   2drop
 ;
 
 : slurp ( -- ) begin fd>pad ?dup while pad swap gulp repeat ;
 
-: report ( -- )
-  cr ." vertex count: " vcount .
-  cr ." index count: "  icount .
+: allocate-buffers ( -- )
+  here pcount position-cells * allot to positions
+  here ncount normal-cells   * allot to normals
+  here fcount face-cells     * allot to faces
+
+  positions pcount position-cells * erase
+  normals   ncount normal-cells   * erase
+  faces     fcount face-cells     * erase
 ;
 
-: load-obj ( addr0 u -- vaddr iaddr v f )
-  cr 2dup ." Reading file: " type
-  open-file count-elements to icount to vcount
+: load-obj ( addr0 u -- paddr naddr iaddr p n i )
+  open-file count-elements
   rewind
-  vcount allot-buffer to vertices
-  icount allot-buffer to indices
+  allocate-buffers
   slurp
   close-file
-  report
-  vertices indices vcount icount
+  positions normals faces pcount ncount fcount
 ;
+
+\ s" models/cube.obj" load-obj
+\ to fcount to ncount to pcount
+\ to faces to normals to positions
+\ positions pcount position-cells * dump
+\ normals   ncount normal-cells   * dump
+\ faces     fcount face-cells     * dump
+
+\ bye
