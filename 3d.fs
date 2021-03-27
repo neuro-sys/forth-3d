@@ -40,9 +40,9 @@ false value wireframe?
   + + 0 <=
 ;
 
-#width 2 /  i>fi constant #width-half
+#width  2 / i>fi constant #width-half
 #height 2 / i>fi constant #height-half
-#width 2 /  i>fi constant #dist
+#width  2 / i>fi constant #dist
   
 : >p  ( z p -- p1 )  #dist fimul swap fidiv ;
 
@@ -59,7 +59,7 @@ false value wireframe?
 ;
 
 create t0 0.0e f>fi , 0.0e f>fi , -3.5e f>fi , \ translate vector
-create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi , \ scale vector
+create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi ,  \ scale vector
 45 value angle
 
 0 value x
@@ -112,27 +112,19 @@ create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi , \ scale vector
 ;
 
 0 value face
-create v0 vector3 allot
-create v1 vector3 allot
-create v2 vector3 allot
-create n0 vector3 allot
-create n1 vector3 allot
-create n2 vector3 allot
 : face>vertices ( n -- v0 v1 v2 n0 n1 n2 )
   face-at to face
 
-  face face.v0.p + @ 1- position-at v@ v0 v!
-  face face.v1.p + @ 1- position-at v@ v1 v!
-  face face.v2.p + @ 1- position-at v@ v2 v!
+  face face.v0.p + @ 1- position-at v@
+  face face.v1.p + @ 1- position-at v@
+  face face.v2.p + @ 1- position-at v@
 
-  face face.v0.n + @ 1- normal-at v@ n0 v!
-  face face.v1.n + @ 1- normal-at v@ n1 v!
-  face face.v2.n + @ 1- normal-at v@ n2 v!
-
-  v0 v@ v1 v@ v2 v@
-  n0 v@ n1 v@ n2 v@
+  face face.v0.n + @ 1- normal-at v@
+  face face.v1.n + @ 1- normal-at v@
+  face face.v2.n + @ 1- normal-at v@
 ;
 
+\ TODO: Use matrices
 : v>rottrans ( v0 -- v1 )
   angle xrot
   angle yrot
@@ -167,11 +159,6 @@ create n2 vector3 allot
 create a1 vector3 allot
 create b1 vector3 allot
 
-: get-abs-max-3 ( a b c -- a )
-  abs rot abs rot abs
-  max max
-;
-  
 : get-average-z z0 z1 z2 + + 3 fidiv ;
 
 : draw-triangle ( v0 v1 v2 n0 n1 n2 -- )
@@ -184,17 +171,12 @@ create b1 vector3 allot
 
   0 i>fi 0 i>fi -1 i>fi
   n0 v@ v>rottrans vnormalize
+  \ cheating with FPU for facos
   vdot fi>f facos 3.141592e fswap f- 3.141592e f/ 10e f* f>fi
 
   256 i>fi fimul fi>i
   dup dup set-color
 
-  \ n0 v.x@ 255 i>fi fimul fi>i
-  \ n0 v.y@ 255 i>fi fimul fi>i
-  \ n0 v.z@ 255 i>fi fimul fi>i
-  \ set-color
-
-  \ get-average-z currentz !
 
   x0 y0 
   x1 y1 
@@ -212,14 +194,8 @@ create b1 vector3 allot
 
 ;
 
-create v0 vector3 allot
-create v1 vector3 allot
-create v2 vector3 allot
-create n0 vector3 allot
-create n1 vector3 allot
-create n2 vector3 allot
 : 3d
-  s" models/monkey.obj" load-obj
+  s" models/torus.obj" load-obj
   to fcount
   to ncount
   to pcount

@@ -23,7 +23,7 @@ require zbuffer.fs
 
 \ all values are in 8.8 fixed point format
 0 value x0 \ top
-0 value y0 \
+0 value y0
 0 value x1 \ left
 0 value y1
 0 value x2 \ right

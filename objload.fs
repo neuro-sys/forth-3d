@@ -73,8 +73,8 @@ constant normal-cells
 \ file related words
 : fd>pad       ( -- u ) pad 80 fd read-line throw drop ;
 : open ( addr u -- fd ) r/o open-file throw ;
-: open-file  ( addr u ) open to fd ;
-: close-file     ( -- ) fd close-file throw ;
+: open-obj   ( addr u ) open to fd ;
+: close-obj      ( -- ) fd close-file throw ;
 : rewind         ( -- ) 0. fd reposition-file throw ;
 
 \ Count the number of positions and faces in currently open file
@@ -172,31 +172,17 @@ constant normal-cells
   r> swap position.x + !
 ;
 
-0 value p0
-0 value p1
-0 value p2
-0 value n0
-0 value n1
-0 value n2
-: add-face ( addr u -- ) \ s" 2 3 1"
-  next-face-int to p0
+: add-face ( addr u -- ) \ s" 1//2 3//4 5//6"
+  next-f >r
+  next-face-int r@ face.v0.p + !
   next-face-int drop
-  next-face-int to n0
-  next-face-int to p1
+  next-face-int r@ face.v0.n + !
+  next-face-int r@ face.v1.p + !
   next-face-int drop
-  next-face-int to n1
-  next-face-int to p2
+  next-face-int r@ face.v1.n + !
+  next-face-int r@ face.v2.p + !
   next-face-int drop
-  next-face-int to n2
-
-  next-f
-  p0 over face.v0.p + !
-  p1 over face.v1.p + !
-  p2 over face.v2.p + !
-
-  n0 over face.v0.n + !
-  n1 over face.v1.n + !
-  n2 swap face.v2.n + !
+  next-face-int r> face.v2.n + !
 ;
 
 : gulp ( addr n -- )
@@ -220,11 +206,7 @@ constant normal-cells
 ;
 
 : load-obj ( addr0 u -- paddr naddr iaddr p n i )
-  open-file count-elements
-  rewind
-  allocate-buffers
-  slurp
-  close-file
+  open-obj count-elements rewind allocate-buffers slurp close-obj
   positions normals faces pcount ncount fcount
 ;
 
