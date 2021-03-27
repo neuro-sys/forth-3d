@@ -5,7 +5,7 @@ require zbuffer.fs
 0 value y
 0 value x1
 0 value x2
-0 value n
+0 value n0
 0 value 'zbuffer
 
 : hline ( y x1 x2 -- )
@@ -13,9 +13,9 @@ require zbuffer.fs
 
   x1 x2 > if x1 x2 swap to x2 to x1 then
 
-  x2 x1 - to n
+  x2 x1 - to n0
 
-  n 0=
+  n0 0=
   x2 y pixel-off? or 0= if 
     x2 x1 do i y put-pixel loop \ Optimize this bit, inline ASM?
   then

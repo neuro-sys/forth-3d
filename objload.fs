@@ -212,7 +212,7 @@ constant normal-cells
   positions normals faces pcount ncount fcount
 ;
 
-\ s" models/cube.obj" load-obj
+\ s" models/torus.obj" load-obj
 \ to fcount to ncount to pcount
 \ to faces to normals to positions
 \ cr ." Positions: " positions pcount position-cells * dump
