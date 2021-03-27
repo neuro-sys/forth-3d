@@ -88,13 +88,13 @@ constant normal-cells
   begin
     fd>pad
   while
-    pad 3 s" vn " compare 0= if normal 1+ to normal then
+    pad 3 s" vn " compare 0= if normal   1+ to normal then
     pad 2 s" v "  compare 0= if position 1+ to position then
-    pad 2 s" f "  compare 0= if index 1+ to index then
+    pad 2 s" f "  compare 0= if index    1+ to index then
   repeat
   position to pcount
-  normal to ncount
-  index to fcount
+  normal   to ncount
+  index    to fcount
 ;
 
 0 value poffset
@@ -105,9 +105,9 @@ constant normal-cells
 : normal-at   ( n -- adr ) normal-cells   * normals + ;
 : face-at     ( n -- adr ) face-cells     * faces + ;
 
-: next-p ( -- addr )     poffset position-at poffset 1+ to poffset ;
-: next-n ( -- addr )     noffset normal-at   noffset 1+ to noffset ;
-: next-f ( -- addr )     foffset face-at     foffset 1+ to foffset ;
+: next-paddr ( -- addr ) poffset position-at poffset 1+ to poffset ;
+: next-naddr ( -- addr ) noffset normal-at   noffset 1+ to noffset ;
+: next-faddr ( -- addr ) foffset face-at     foffset 1+ to foffset ;
 
 \ Parse next float from string delimited by spaces and return the
 \ string for next float
@@ -155,7 +155,7 @@ constant normal-cells
   next-float f>fi >r
   next-float f>fi >r
 
-  next-n
+  next-naddr
   r> over normal.z + !
   r> over normal.y + !
   r> swap normal.x + !
@@ -166,14 +166,14 @@ constant normal-cells
   next-float f>fi >r
   next-float f>fi >r
 
-  next-p
+  next-paddr
   r> over position.z + !
   r> over position.y + !
   r> swap position.x + !
 ;
 
 : add-face ( addr u -- ) \ s" 1//2 3//4 5//6"
-  next-f >r
+  next-faddr >r
   next-face-int r@ face.v0.p + !
   next-face-int drop
   next-face-int r@ face.v0.n + !
@@ -185,6 +185,7 @@ constant normal-cells
   next-face-int r> face.v2.n + !
 ;
 
+\ consume the current line
 : gulp ( addr n -- )
   over 3 s" vn " compare 0= if 3 /string add-normal exit then
   over 2 s" v "  compare 0= if 2 /string add-vertex exit then
@@ -193,6 +194,7 @@ constant normal-cells
   2drop
 ;
 
+\ consume the lines in the file
 : slurp ( -- ) begin fd>pad ?dup while pad swap gulp repeat ;
 
 : allocate-buffers ( -- )
