@@ -2,6 +2,10 @@
 \ when FPU is not available, or too slow compared to fixed point when
 \ it provides good enough precision.
 
+[undefined] fi.fs [if]
+
+vocabulary fi.fs also fi.fs definitions
+
 \ fixed point format
 1 14 lshift      value #fbits           \ 4.14 for 16-bit words
 #fbits 1-        constant #fbitmask
@@ -26,3 +30,7 @@
 : ficeil  ( n0 - n1 )      #fbits/2 + fifloor ;
 
 : fi>f    ( fi -- ) ( F: f -- ) 0 swap d>f 0 #fbits d>f f/ ;
+
+previous definitions
+
+[then]

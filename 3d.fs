@@ -1,5 +1,11 @@
-\ 3d drawing with fixed point arithmetic
-\ 
+\ Polygon based 3D renderer.
+\
+\ TODO:
+\
+\ - Use vocabularies for modules
+\ - Add z-buffering
+\ - Add z-sorting
+\ - Get rid of FPU completely
 
 require sdl.fs
 require objload.fs

@@ -1,3 +1,7 @@
+[undefined] rnd.fs [if]
+
+vocabulary rnd.fs also rnd.fs definitions
+
 create xs 1 ,
 : rnd ( n -- u )
   xs @
@@ -7,3 +11,7 @@ create xs 1 ,
   dup xs !
   abs swap mod
 ;
+
+previous definitions
+
+[then]

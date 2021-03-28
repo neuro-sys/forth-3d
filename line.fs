@@ -1,5 +1,12 @@
+[undefined] line.fs [if]
+
+vocabulary line.fs also line.fs definitions
+
 require sdl.fs
 require zbuffer.fs
+
+also sdl.fs
+also zbuffer.fs
 
 0 value x0
 0 value y0
@@ -9,6 +16,7 @@ require zbuffer.fs
 0 value dy
 0 value e
 0 value s
+
 : line-put-pixel
   x0 y0 pixel-off? 0= if
     x0 y0 put-pixel
@@ -98,3 +106,7 @@ require zbuffer.fs
 \   wait-key
 \   sdl-quit
 \ ;
+
+previous definitions
+
+[then]

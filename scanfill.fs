@@ -1,6 +1,13 @@
+[undefined] scanfill.fs [if]
+vocabulary scanfill.fs also scanfill.fs definitions
+
 require sdl.fs
 require fi.fs
 require zbuffer.fs
+
+also sdl.fs
+also fi.fs
+also zbuffer.fs
 
 0 value y
 0 value x1
@@ -119,3 +126,7 @@ require zbuffer.fs
 \ ;
 
 \ test bye
+
+previous definitions
+
+[then]

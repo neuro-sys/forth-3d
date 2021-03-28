@@ -1,3 +1,7 @@
+[undefined] sdl.fs [if]
+
+vocabulary sdl.fs also sdl.fs definitions
+
 c-library sdl
 s" SDL" add-lib
 
@@ -82,3 +86,7 @@ variable sdl-event sdl-event-type-size allot
 ;
 
 : flip-screen surface @ sdl-flip throw ;
+
+previous definitions
+
+[then]

@@ -39,7 +39,13 @@
 \ p, n and i are the count of elements for each of the arrays
 \ respectively.
 
+[undefined] objload.fs [if]
+
+vocabulary objload.fs also objload.fs definitions
+
 require fi.fs
+
+also fi.fs
 
 0
 dup constant face.v0.p cell +
@@ -244,3 +250,7 @@ constant normal-cells
 \ cr next-face-int . .s
 
 \ bye
+
+previous definitions
+
+[then]

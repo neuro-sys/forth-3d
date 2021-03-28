@@ -1,4 +1,10 @@
+[undefined] vec3.fs [if]
+
+vocabulary vec3.fs also vec3.fs definitions
+
 require fi.fs
+
+also fi.fs
 
 0 \ vector3
 dup constant v.x 1 cells +
@@ -121,3 +127,7 @@ create v2 vector3 allot
 
 \ f.s
 \ bye
+
+previous definitions
+
+[then]
