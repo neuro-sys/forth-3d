@@ -43,9 +43,9 @@
 
 vocabulary objload.fs also objload.fs definitions
 
-require fi.fs
+require fp.fs
 
-also fi.fs
+also fp.fs
 
 0
 dup constant face.v0.p cell +
@@ -157,9 +157,9 @@ constant normal-cells
 ;
 
 : add-normal ( addr u -- ) \ s" -1.000000 -1.000000 -1.000000"
-  next-float f>fi >r
-  next-float f>fi >r
-  next-float f>fi >r
+  next-float f>fp >r
+  next-float f>fp >r
+  next-float f>fp >r
 
   next-naddr
   r> over normal.z + !
@@ -168,9 +168,9 @@ constant normal-cells
 ;
 
 : add-vertex ( addr u -- ) \ s" -1.000000 -2.000000 3.000000"
-  next-float f>fi >r
-  next-float f>fi >r
-  next-float f>fi >r
+  next-float f>fp >r
+  next-float f>fp >r
+  next-float f>fp >r
 
   next-paddr
   r> over position.z + !

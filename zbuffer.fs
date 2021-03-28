@@ -3,10 +3,10 @@
 vocabulary zbuffer.fs also zbuffer.fs definitions
 
 require sdl.fs
-require fi.fs
+require fp.fs
 
 also sdl.fs
-also fi.fs
+also fp.fs
 
 variable zbuffer-on? false zbuffer-on? !
 
@@ -22,7 +22,7 @@ create zbuffer #width #height * cells allot
   zbuffer -rot #width cells * swap cells + + !
 ;
 
-#fbits negate #fbits * constant #max-fp
+#fp.bit negate #fp.bit * constant #max-fp
 
 : clear-zbuffer
   zbuffer #width #height * cells + zbuffer do

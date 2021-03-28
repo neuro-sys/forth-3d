@@ -2,11 +2,11 @@
 vocabulary scanfill.fs also scanfill.fs definitions
 
 require sdl.fs
-require fi.fs
+require fp.fs
 require zbuffer.fs
 
 also sdl.fs
-also fi.fs
+also fp.fs
 also zbuffer.fs
 
 \ all values are in 8.8 fixed point format
@@ -52,9 +52,9 @@ also zbuffer.fs
 0 value cur-left-bottom-x
 0 value scanline
 : scan-edges
-  x1 x0 - y1 y0 - dup 0= if 2drop 1 else fidiv then to dxdy-left
-  x2 x0 - y2 y0 - dup 0= if 2drop 1 else fidiv then to dxdy-right
-  x2 x1 - y2 y1 - dup 0= if 2drop 1 else fidiv then to dxdy-left-bottom
+  x1 x0 - y1 y0 - dup 0= if 2drop 1 else fpdiv then to dxdy-left
+  x2 x0 - y2 y0 - dup 0= if 2drop 1 else fpdiv then to dxdy-right
+  x2 x1 - y2 y1 - dup 0= if 2drop 1 else fpdiv then to dxdy-left-bottom
 
   x0 to cur-left-x
   x0 to cur-right-x
@@ -65,12 +65,12 @@ also zbuffer.fs
   begin
     scanline y1 <
   while
-    scanline fi>i cur-left-x fi>i cur-right-x fi>i
+    scanline fp>i cur-left-x fp>i cur-right-x fp>i
     hline
 
     cur-left-x dxdy-left + to cur-left-x
     cur-right-x dxdy-right + to cur-right-x
-    scanline 1 i>fi + to scanline
+    scanline 1 i>fp + to scanline
   repeat
 
   \ scan bottom half
@@ -78,25 +78,25 @@ also zbuffer.fs
   begin
     scanline y2 <
   while
-    scanline fi>i cur-left-bottom-x fi>i cur-right-x fi>i
+    scanline fp>i cur-left-bottom-x fp>i cur-right-x fp>i
     hline
 
     cur-left-bottom-x dxdy-left-bottom + to cur-left-bottom-x
     cur-right-x dxdy-right + to cur-right-x
-    scanline 1 i>fi + to scanline
+    scanline 1 i>fp + to scanline
   repeat
 ;
 
 : scanfill ( x0 y0 z0 x1 y1 z1 x2 y2 z2 -- )
          to z2
-  ficeil to y2
-  ficeil to x2
+  fpceil to y2
+  fpceil to x2
          to z1
-  ficeil to y1
-  ficeil to x1
+  fpceil to y1
+  fpceil to x1
          to z0
-  ficeil to y0
-  ficeil to x0
+  fpceil to y0
+  fpceil to x0
 
   \ sort left right, top down
   y0 y1 > if
@@ -121,14 +121,14 @@ also zbuffer.fs
 \   init-sdl
 \   hex 0x00 0x80 0x80 decimal set-color
 
-\   ox      i>fi oy      i>fi \ top
-\   ox 30 + i>fi oy 90 + i>fi \ left
-\   ox 39 - i>fi oy 180 + i>fi \ right
+\   ox      i>fp oy      i>fp \ top
+\   ox 30 + i>fp oy 90 + i>fp \ left
+\   ox 39 - i>fp oy 180 + i>fp \ right
 
 \   hex 0x80 0x80 0x80 decimal set-color
-\   ox      i>fi oy      i>fi \ top
-\   ox 30 - i>fi oy 90 + i>fi \ left
-\   ox 39 + i>fi oy 180 + i>fi \ right
+\   ox      i>fp oy      i>fp \ top
+\   ox 30 - i>fp oy 90 + i>fp \ left
+\   ox 39 + i>fp oy 180 + i>fp \ right
 \   scanfill
 
 \   flip-screen

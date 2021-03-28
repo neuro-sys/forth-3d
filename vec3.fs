@@ -2,9 +2,9 @@
 
 vocabulary vec3.fs also vec3.fs definitions
 
-require fi.fs
+require fp.fs
 
-also fi.fs
+also fp.fs
 
 0 \ vector3
 dup constant v.x 1 cells +
@@ -42,17 +42,17 @@ create v2 vector3 allot
 : vmul ( v0 v1 -- v2 )
   v1 v! v0 v!
 
-  v0 v.x@ v1 v.x@ fimul
-  v0 v.y@ v1 v.y@ fimul
-  v0 v.z@ v1 v.z@ fimul
+  v0 v.x@ v1 v.x@ fpmul
+  v0 v.y@ v1 v.y@ fpmul
+  v0 v.z@ v1 v.z@ fpmul
 ;
 
 : vdiv ( v0 v1 -- v2 )
   v1 v! v0 v!
 
-  v0 v.x@ v1 v.x@ fidiv
-  v0 v.y@ v1 v.y@ fidiv
-  v0 v.z@ v1 v.z@ fidiv
+  v0 v.x@ v1 v.x@ fpdiv
+  v0 v.y@ v1 v.y@ fpdiv
+  v0 v.z@ v1 v.z@ fpdiv
 ;
 
 \ https://www.fpgarelated.com/showarticle/1347.php
@@ -60,21 +60,21 @@ create v2 vector3 allot
 : vlength ( v0 -- n )
   v0 v!
 
-  v0 v.x@ fi>f fdup f*
-  v0 v.y@ fi>f fdup f* 
-  v0 v.z@ fi>f fdup f* f+ f+ fsqrt f>fi
+  v0 v.x@ fp>f fdup f*
+  v0 v.y@ fp>f fdup f* 
+  v0 v.z@ fp>f fdup f* f+ f+ fsqrt f>fp
 
-  \ v0 v.x@ dup fimul
-  \ v0 v.y@ dup fimul
-  \ v0 v.z@ dup fimul + +
+  \ v0 v.x@ dup fpmul
+  \ v0 v.y@ dup fpmul
+  \ v0 v.z@ dup fpmul + +
 ;
 
 : vdot ( v0 v1 -- n )
   v1 v! v0 v!
 
-  v0 v.x@ v1 v.x@ fimul
-  v0 v.y@ v1 v.y@ fimul
-  v0 v.z@ v1 v.z@ fimul
+  v0 v.x@ v1 v.x@ fpmul
+  v0 v.y@ v1 v.y@ fpmul
+  v0 v.z@ v1 v.z@ fpmul
 
   + +
 ;
@@ -82,14 +82,14 @@ create v2 vector3 allot
 : vcross ( v0 v1 -- v2 )
   v1 v! v0 v!
 
-  v0 v.y@ v1 v.z@ fimul
-  v0 v.z@ v1 v.y@ fimul -
+  v0 v.y@ v1 v.z@ fpmul
+  v0 v.z@ v1 v.y@ fpmul -
 
-  v0 v.z@ v1 v.x@ fimul
-  v0 v.x@ v1 v.z@ fimul -
+  v0 v.z@ v1 v.x@ fpmul
+  v0 v.x@ v1 v.z@ fpmul -
 
-  v0 v.x@ v1 v.y@ fimul
-  v0 v.y@ v1 v.x@ fimul -
+  v0 v.x@ v1 v.y@ fpmul
+  v0 v.y@ v1 v.x@ fpmul -
 ;
 
 : vnormal ( v0 v1 v2 -- v3 )
@@ -107,10 +107,10 @@ create v2 vector3 allot
   vdiv
 ;
 
-\ 1 i>fi 2 i>fi 3 i>fi
-\ 1 i>fi 5 i>fi 7 i>fi vdot fi>i .s
+\ 1 i>fp 2 i>fp 3 i>fp
+\ 1 i>fp 5 i>fp 7 i>fp vdot fp>i .s
 
-\ \ 1 i>fi 2 i>fi 3 i>fi .s vnormalize .s
+\ \ 1 i>fp 2 i>fp 3 i>fp .s vnormalize .s
 \ bye
 
 \ 0e 16384e f/

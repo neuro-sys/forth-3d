@@ -2,14 +2,17 @@
 \
 \ TODO:
 \
-\ - Use vocabularies for modules
-\ - Add z-buffering
+\ + Use vocabularies for modules
+\ + Add z-buffering
 \ - Add z-sorting
 \ - Get rid of FPU completely
+\   - string>fi
+\   - fisqrt
+\ - Use matrices
 
 require sdl.fs
 require objload.fs
-require fi.fs
+require fp.fs
 require zbuffer.fs
 require line.fs
 require trig.fs
@@ -35,22 +38,22 @@ false value wireframe?
   to y2 to x2 to y1 to x1 to y0 to x0
 
   x1 x0 -
-  y1 y0 + fimul
+  y1 y0 + fpmul
 
   x2 x1 -
-  y2 y1 + fimul
+  y2 y1 + fpmul
 
   x0 x2 -
-  y0 y2 + fimul
+  y0 y2 + fpmul
 
   + + 0 <=
 ;
 
-#width  2 / i>fi constant #width-half
-#height 2 / i>fi constant #height-half
-#width  2 / i>fi constant #dist
+#width  2 / i>fp constant #width-half
+#height 2 / i>fp constant #height-half
+#width  2 / i>fp constant #dist
   
-: >p  ( z p -- p1 )  #dist fimul swap fidiv ;
+: >p  ( z p -- p1 )  #dist fpmul swap fpdiv ;
 
 0 value x
 0 value y
@@ -64,8 +67,8 @@ false value wireframe?
   z
 ;
 
-create t0 0.0e f>fi , 0.0e f>fi , -3.5e f>fi , \ translate vector
-create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi ,  \ scale vector
+create t0 0.0e f>fp , 0.0e f>fp , -3.5e f>fp , \ translate vector
+create t1 1.0e f>fp , 1.0e f>fp , 1.0e f>fp ,  \ scale vector
 45 value angle
 
 0 value x
@@ -78,11 +81,11 @@ create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi ,  \ scale vector
 : zrot ( x y z a -- x y z )
   360 mod to a to z to y to x
 
-  costable a cells + @ x fimul
-  sintable a cells + @ y fimul -
+  costable a cells + @ x fpmul
+  sintable a cells + @ y fpmul -
 
-  sintable a cells + @ x fimul
-  costable a cells + @ y fimul +
+  sintable a cells + @ x fpmul
+  costable a cells + @ y fpmul +
 
   z
 ;
@@ -93,13 +96,13 @@ create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi ,  \ scale vector
 : yrot ( x y z a -- x y z )
   360 mod to a to z to y to x
 
-  sintable a cells + @ z fimul
-  costable a cells + @ x fimul +
+  sintable a cells + @ z fpmul
+  costable a cells + @ x fpmul +
 
   y
 
-  costable a cells + @ z fimul
-  sintable a cells + @ x fimul -
+  costable a cells + @ z fpmul
+  sintable a cells + @ x fpmul -
 ;
 
 \ x = x
@@ -110,11 +113,11 @@ create t1 1.0e f>fi , 1.0e f>fi , 1.0e f>fi ,  \ scale vector
 
   x
 
-  costable a cells + @ y fimul
-  sintable a cells + @ z fimul -
+  costable a cells + @ y fpmul
+  sintable a cells + @ z fpmul -
 
-  sintable a cells + @ y fimul
-  costable a cells + @ z fimul +
+  sintable a cells + @ y fpmul
+  costable a cells + @ z fpmul +
 ;
 
 0 value face
@@ -165,7 +168,7 @@ create n2 vector3 allot
 create a1 vector3 allot
 create b1 vector3 allot
 
-: get-average-z z0 z1 z2 + + 3 fidiv ;
+: get-average-z z0 z1 z2 + + 3 fpdiv ;
 
 : draw-triangle ( v0 v1 v2 n0 n1 n2 -- )
   n2 v! n1 v! n0 v!
@@ -175,12 +178,12 @@ create b1 vector3 allot
   v1 v@ v>proj to z1 to y1 to x1 
   v2 v@ v>proj to z2 to y2 to x2 
 
-  0 i>fi 0 i>fi -1 i>fi
+  0 i>fp 0 i>fp -1 i>fp
   n0 v@ v>rottrans vnormalize
   \ cheating with FPU for facos
-  vdot fi>f facos 3.141592e fswap f- 3.141592e f/ 10e f* f>fi
+  vdot fp>f facos 3.141592e fswap f- 3.141592e f/ 10e f* f>fp
 
-  256 i>fi fimul fi>i
+  256 i>fp fpmul fp>i
   dup dup set-color
 
 
@@ -188,9 +191,9 @@ create b1 vector3 allot
   x1 y1 
   x2 y2 visible? if
     wireframe? if
-      x0 fi>i y0 fi>i x1 fi>i y1 fi>i line
-      x1 fi>i y1 fi>i x2 fi>i y2 fi>i line
-      x2 fi>i y2 fi>i x0 fi>i y0 fi>i line
+      x0 fp>i y0 fp>i x1 fp>i y1 fp>i line
+      x1 fp>i y1 fp>i x2 fp>i y2 fp>i line
+      x2 fp>i y2 fp>i x0 fp>i y0 fp>i line
     else
       x0 y0 z0
       x1 y1 z1
@@ -201,7 +204,7 @@ create b1 vector3 allot
 ;
 
 : 3d
-  s" models/monkey.obj" load-obj
+  s" models/torus.obj" load-obj
   to fcount
   to ncount
   to pcount

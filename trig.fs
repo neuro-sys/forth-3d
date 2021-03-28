@@ -1,13 +1,13 @@
 [undefined] trig.fs [if]
 vocabulary trig.fs also trig.fs definitions
 
-require fi.fs
+require fp.fs
 
-also fi.fs
+also fp.fs
 
 : gen-trigtable ( xt -- )
   360 0 do
-    dup i 0 d>f pi f* 180e f/ execute f>fi ,
+    dup i 0 d>f pi f* 180e f/ execute f>fp ,
   loop drop
 ;
 
