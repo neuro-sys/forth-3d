@@ -10,13 +10,25 @@ also fi.fs
 
 variable zbuffer-on? false zbuffer-on? !
 
-create zbuffer #width #height * allot
+create zbuffer #width #height * cells allot
 
-variable currentz
+0 value zbuffer-current
 
-#fbits negate #fbits * constant min-fp
+: get-zbuffer-pixel ( x y -- n )
+  zbuffer -rot #width cells * swap cells + + @
+;
 
-: clear-zbuffer zbuffer #width #height * min-fp fill ;
+: set-zbuffer-pixel ( n x y -- )
+  zbuffer -rot #width cells * swap cells + + !
+;
+
+#fbits negate #fbits * constant #max-fp
+
+: clear-zbuffer
+  zbuffer #width #height * cells + zbuffer do
+    #max-fp i !
+  cell +loop
+;
 
 previous definitions
 

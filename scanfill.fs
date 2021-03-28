@@ -9,9 +9,18 @@ also sdl.fs
 also fi.fs
 also zbuffer.fs
 
+\ all values are in 8.8 fixed point format
+0 value x0 \ top
+0 value y0
+0 value z0
+0 value x1 \ left
+0 value y1
+0 value z1
+0 value x2 \ right
+0 value y2
+0 value z2
+
 0 value y
-0 value x1
-0 value x2
 0 value n0
 0 value 'zbuffer
 
@@ -22,19 +31,18 @@ also zbuffer.fs
 
   x2 x1 - to n0
 
-  n0 0=
-  x2 y pixel-off? or 0= if 
-    x2 x1 do i y put-pixel loop \ Optimize this bit, inline ASM?
+  n0 0= if exit then
+
+  x2 y pixel-off? 0= if
+    x2 x1 do
+      i y get-zbuffer-pixel
+      z0 < if
+        z0 i y set-zbuffer-pixel
+        i y put-pixel
+      then
+    loop \ Optimize this bit, inline ASM?
   then
 ;
-
-\ all values are in 8.8 fixed point format
-0 value x0 \ top
-0 value y0
-0 value x1 \ left
-0 value y1
-0 value x2 \ right
-0 value y2
 
 0 value dxdy-left
 0 value dxdy-right
@@ -79,11 +87,14 @@ also zbuffer.fs
   repeat
 ;
 
-: scanfill ( x0 y0 x1 y1 x2 y2 -- )
+: scanfill ( x0 y0 z0 x1 y1 z1 x2 y2 z2 -- )
+         to z2
   ficeil to y2
   ficeil to x2
+         to z1
   ficeil to y1
   ficeil to x1
+         to z0
   ficeil to y0
   ficeil to x0
 

@@ -12,19 +12,15 @@ dup constant v.y 1 cells +
 dup constant v.z 1 cells +
 constant vector3
 
-: v.x v.x + ;
-: v.y v.y + ;
-: v.z v.z + ;
-
-: v.x@ v.x @ ;
-: v.y@ v.y @ ;
-: v.z@ v.z @ ;
+: v.x@ v.x + @ ;
+: v.y@ v.y + @ ;
+: v.z@ v.z + @ ;
 
 create v0 vector3 allot
 create v1 vector3 allot
 create v2 vector3 allot
 
-: v! ( x y z addr -- ) dup >r v.z ! r@ v.y ! r> ! ;
+: v! ( x y z addr -- ) dup >r v.z + ! r@ v.y + ! r> ! ;
 : v@ ( v -- x y z )    dup @ swap dup v.y@ swap v.z@ ;
 
 : vadd ( v0 v1 -- v2 )

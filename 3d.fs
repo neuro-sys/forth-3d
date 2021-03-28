@@ -192,16 +192,16 @@ create b1 vector3 allot
       x1 fi>i y1 fi>i x2 fi>i y2 fi>i line
       x2 fi>i y2 fi>i x0 fi>i y0 fi>i line
     else
-      x0 y0
-      x1 y1
-      x2 y2 scanfill
+      x0 y0 z0
+      x1 y1 z1
+      x2 y2 z2 scanfill
     then
   then
 
 ;
 
 : 3d
-  s" models/torus.obj" load-obj
+  s" models/monkey.obj" load-obj
   to fcount
   to ncount
   to pcount
@@ -217,7 +217,7 @@ create b1 vector3 allot
 
   begin
     clear-screen
-    \ clear-zbuffer
+    clear-zbuffer
 
     fcount 0 do
       i face>vertices draw-triangle
