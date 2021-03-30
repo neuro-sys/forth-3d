@@ -42,17 +42,17 @@ create v2 vector3 allot
 : vmul ( v0 v1 -- v2 )
   v1 v! v0 v!
 
-  v0 v.x@ v1 v.x@ fpmul
-  v0 v.y@ v1 v.y@ fpmul
-  v0 v.z@ v1 v.z@ fpmul
+  v0 v.x@ v1 v.x@ fp*
+  v0 v.y@ v1 v.y@ fp*
+  v0 v.z@ v1 v.z@ fp*
 ;
 
 : vdiv ( v0 v1 -- v2 )
   v1 v! v0 v!
 
-  v0 v.x@ v1 v.x@ fpdiv
-  v0 v.y@ v1 v.y@ fpdiv
-  v0 v.z@ v1 v.z@ fpdiv
+  v0 v.x@ v1 v.x@ fp/
+  v0 v.y@ v1 v.y@ fp/
+  v0 v.z@ v1 v.z@ fp/
 ;
 
 \ https://www.fpgarelated.com/showarticle/1347.php
@@ -64,17 +64,17 @@ create v2 vector3 allot
   v0 v.y@ fp>f fdup f* 
   v0 v.z@ fp>f fdup f* f+ f+ fsqrt f>fp
 
-  \ v0 v.x@ dup fpmul
-  \ v0 v.y@ dup fpmul
-  \ v0 v.z@ dup fpmul + +
+  \ v0 v.x@ dup fp*
+  \ v0 v.y@ dup fp*
+  \ v0 v.z@ dup fp* + +
 ;
 
 : vdot ( v0 v1 -- n )
   v1 v! v0 v!
 
-  v0 v.x@ v1 v.x@ fpmul
-  v0 v.y@ v1 v.y@ fpmul
-  v0 v.z@ v1 v.z@ fpmul
+  v0 v.x@ v1 v.x@ fp*
+  v0 v.y@ v1 v.y@ fp*
+  v0 v.z@ v1 v.z@ fp*
 
   + +
 ;
@@ -82,14 +82,14 @@ create v2 vector3 allot
 : vcross ( v0 v1 -- v2 )
   v1 v! v0 v!
 
-  v0 v.y@ v1 v.z@ fpmul
-  v0 v.z@ v1 v.y@ fpmul -
+  v0 v.y@ v1 v.z@ fp*
+  v0 v.z@ v1 v.y@ fp* -
 
-  v0 v.z@ v1 v.x@ fpmul
-  v0 v.x@ v1 v.z@ fpmul -
+  v0 v.z@ v1 v.x@ fp*
+  v0 v.x@ v1 v.z@ fp* -
 
-  v0 v.x@ v1 v.y@ fpmul
-  v0 v.y@ v1 v.x@ fpmul -
+  v0 v.x@ v1 v.y@ fp*
+  v0 v.y@ v1 v.x@ fp* -
 ;
 
 : vnormal ( v0 v1 v2 -- v3 )

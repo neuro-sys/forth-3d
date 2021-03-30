@@ -1,52 +1,67 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
+#include <stdint.h>
 
-#define ROWS 20
-#define COLS 80
+typedef int32_t fixed;
 
-int buffer[ROWS][COLS];
-
-void setPixel(int x, int y)
+// Square root of integer
+unsigned long int_sqrt ( unsigned long s )
 {
-    buffer[y][x] = '#';
+	unsigned long x0 = s >> 1;				// Initial estimate
+
+	// Sanity check
+	if ( x0 )
+	{
+		unsigned long x1 = ( x0 + s / x0 ) >> 1;	// Update
+
+
+		while ( x1 < x0 )				// This also checks for cycle
+		{
+			x0 = x1;
+			x1 = ( x0 + s / x0 ) >> 1;
+		}
+		
+		return x0;
+	}
+	else
+	{
+		return s;
+	}
 }
 
-void line(int x0, int y0, int x1, int y1) {
- 
-  int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
-  int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1; 
-  int err = (dx>dy ? dx : -dy)/2, e2;
- 
-  for(;;){
-    setPixel(x0,y0);
-    if (x0==x1 && y0==y1) break;
-    e2 = err;
-    if (e2 >-dx) { err -= dy; x0 += sx; }
-    if (e2 < dy) { err += dx; y0 += sy; }
-  }
-}
-
-void flip()
+fixed sqrtF2F ( fixed x )
 {
-    int y, x;
-
-    for (y = 0; y < ROWS; y++) {
-        for (x = 0; x < COLS; x++) {
-            putchar(buffer[y][x]);
+    uint32_t t, q, b, r;
+    r = x;
+    b = 0x40000000;
+    q = 0;
+    while( b > 0x40 )
+    {
+        t = q + b;
+        if( r >= t )
+        {
+            r -= t;
+            q = t + b; // equivalent to q += 2*b
         }
-        putchar('\n');
+        r <<= 1;
+        b >>= 1;
     }
+    q >>= 8;
+    return q;
 }
+
+#define FP (1 << 16)
+
+typedef unsigned int fp_t;
 
 int main()
 {
-    memset(buffer, ' ', sizeof(buffer));
+    fp_t x0 = 4 * FP + (56.0 / 100.0) * (float) FP;
 
-    line(3, 3, 9, 7);
+    fp_t res1 = int_sqrt(x0 * FP);
+    /* fp_t res2 = sqrtF2F(x0); */
 
-    flip();
+    printf("%f %f\n", (float) res1 / FP);
+
 
     return 0;
 }

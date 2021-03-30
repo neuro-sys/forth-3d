@@ -22,11 +22,9 @@ create zbuffer #width #height * cells allot
   zbuffer -rot #width cells * swap cells + + !
 ;
 
-#fp.bit negate #fp.bit * constant #max-fp
-
 : clear-zbuffer
   zbuffer #width #height * cells + zbuffer do
-    #max-fp i !
+    min-fp i !
   cell +loop
 ;
 

@@ -52,9 +52,9 @@ also zbuffer.fs
 0 value cur-left-bottom-x
 0 value scanline
 : scan-edges
-  x1 x0 - y1 y0 - dup 0= if 2drop 1 else fpdiv then to dxdy-left
-  x2 x0 - y2 y0 - dup 0= if 2drop 1 else fpdiv then to dxdy-right
-  x2 x1 - y2 y1 - dup 0= if 2drop 1 else fpdiv then to dxdy-left-bottom
+  x1 x0 - y1 y0 - dup 0= if 2drop 1 else fp/ then to dxdy-left
+  x2 x0 - y2 y0 - dup 0= if 2drop 1 else fp/ then to dxdy-right
+  x2 x1 - y2 y1 - dup 0= if 2drop 1 else fp/ then to dxdy-left-bottom
 
   x0 to cur-left-x
   x0 to cur-right-x

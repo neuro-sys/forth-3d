@@ -2,13 +2,12 @@
 \
 \ TODO:
 \
-\ + Use vocabularies for modules
-\ + Add z-buffering
 \ - Add z-sorting
 \ - Get rid of FPU completely
 \   - string>fi
 \   - fisqrt
 \ - Use matrices
+\ - textures?
 
 require sdl.fs
 require objload.fs
@@ -38,13 +37,13 @@ false value wireframe?
   to y2 to x2 to y1 to x1 to y0 to x0
 
   x1 x0 -
-  y1 y0 + fpmul
+  y1 y0 + fp*
 
   x2 x1 -
-  y2 y1 + fpmul
+  y2 y1 + fp*
 
   x0 x2 -
-  y0 y2 + fpmul
+  y0 y2 + fp*
 
   + + 0 <=
 ;
@@ -53,7 +52,7 @@ false value wireframe?
 #height 2 / i>fp constant #height-half
 #width  2 / i>fp constant #dist
   
-: >p  ( z p -- p1 )  #dist fpmul swap fpdiv ;
+: >p  ( z p -- p1 )  #dist fp* swap fp/ ;
 
 0 value x
 0 value y
@@ -67,8 +66,8 @@ false value wireframe?
   z
 ;
 
-create t0 0.0e f>fp , 0.0e f>fp , -3.5e f>fp , \ translate vector
-create t1 1.0e f>fp , 1.0e f>fp , 1.0e f>fp ,  \ scale vector
+create t0 0 0 if>fp , 0 0 if>fp , 3 5 if>fp negate , \ translate vector
+create t1 1 0 if>fp , 1 0 if>fp , 1 0 if>fp ,        \ scale vector
 45 value angle
 
 0 value x
@@ -81,11 +80,11 @@ create t1 1.0e f>fp , 1.0e f>fp , 1.0e f>fp ,  \ scale vector
 : zrot ( x y z a -- x y z )
   360 mod to a to z to y to x
 
-  costable a cells + @ x fpmul
-  sintable a cells + @ y fpmul -
+  costable a cells + @ x fp*
+  sintable a cells + @ y fp* -
 
-  sintable a cells + @ x fpmul
-  costable a cells + @ y fpmul +
+  sintable a cells + @ x fp*
+  costable a cells + @ y fp* +
 
   z
 ;
@@ -96,13 +95,13 @@ create t1 1.0e f>fp , 1.0e f>fp , 1.0e f>fp ,  \ scale vector
 : yrot ( x y z a -- x y z )
   360 mod to a to z to y to x
 
-  sintable a cells + @ z fpmul
-  costable a cells + @ x fpmul +
+  sintable a cells + @ z fp*
+  costable a cells + @ x fp* +
 
   y
 
-  costable a cells + @ z fpmul
-  sintable a cells + @ x fpmul -
+  costable a cells + @ z fp*
+  sintable a cells + @ x fp* -
 ;
 
 \ x = x
@@ -113,11 +112,11 @@ create t1 1.0e f>fp , 1.0e f>fp , 1.0e f>fp ,  \ scale vector
 
   x
 
-  costable a cells + @ y fpmul
-  sintable a cells + @ z fpmul -
+  costable a cells + @ y fp*
+  sintable a cells + @ z fp* -
 
-  sintable a cells + @ y fpmul
-  costable a cells + @ z fpmul +
+  sintable a cells + @ y fp*
+  costable a cells + @ z fp* +
 ;
 
 0 value face
@@ -168,7 +167,7 @@ create n2 vector3 allot
 create a1 vector3 allot
 create b1 vector3 allot
 
-: get-average-z z0 z1 z2 + + 3 fpdiv ;
+: get-average-z z0 z1 z2 + + 3 fp/ ;
 
 : draw-triangle ( v0 v1 v2 n0 n1 n2 -- )
   n2 v! n1 v! n0 v!
@@ -183,7 +182,7 @@ create b1 vector3 allot
   \ cheating with FPU for facos
   vdot fp>f facos 3.141592e fswap f- 3.141592e f/ 10e f* f>fp
 
-  256 i>fp fpmul fp>i
+  255 i>fp fp* fp>i
   dup dup set-color
 
 
@@ -226,9 +225,8 @@ create b1 vector3 allot
       i face>vertices draw-triangle
     loop
 
-
     1000 60 / sdl-delay
-    angle 1+ to angle
+    angle 1 + to angle
 
     flip-screen
 
@@ -240,5 +238,3 @@ create b1 vector3 allot
 ;
 
 3d
-
-bye
